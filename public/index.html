@@ -1,0 +1,2498 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Hub de Gestão de Insumos</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F1F5F9;--card:#fff;--border:#E2E8F0;--text:#1E293B;--sub:#64748B;--dim:#94A3B8;
+  --green:#16A34A;--green-bg:#F0FDF4;--green-b:#BBF7D0;
+  --red:#DC2626;--red-bg:#FEF2F2;--red-b:#FECACA;
+  --yellow:#D97706;--yellow-bg:#FFFBEB;--yellow-b:#FDE68A;
+  --blue:#1D4ED8;--blue-bg:#EFF6FF;--blue-b:#BFDBFE;
+  --orange:#EA580C;--purple:#7C3AED;
+  --brand:#1E3A5F;--r:10px;--sh:0 1px 4px rgba(0,0,0,.08)
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+header{background:var(--brand);color:#fff;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:30px;height:30px;background:rgba(255,255,255,.15);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.title{font-size:15px;font-weight:700}.meta{font-size:11px;color:rgba(255,255,255,.55);margin-top:1px}
+.hright{display:flex;align-items:center;gap:10px}
+.badge-week{background:rgba(255,255,255,.15);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600}
+.btn-refresh{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);color:#fff;padding:5px 12px;border-radius:6px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .15s}
+.btn-refresh:hover{background:rgba(255,255,255,.25)}
+.spin{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+main{padding:18px 24px;max-width:1400px;margin:0 auto}
+.stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
+.stat-card{background:var(--card);border-radius:var(--r);border:1px solid var(--border);padding:14px 16px;box-shadow:var(--sh)}
+.stat-card .slabel{font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.stat-card .sval{font-size:26px;font-weight:700;line-height:1}
+.stat-card .ssub{font-size:11px;color:var(--dim);margin-top:3px}
+.stat-card.red .sval{color:var(--red)}.stat-card.green .sval{color:var(--green)}
+.stat-card.yellow .sval{color:var(--yellow)}.stat-card.blue .sval{color:var(--blue)}
+.stat-card.orange .sval{color:var(--orange)}
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:16px;overflow-x:auto}
+.tab{padding:9px 16px;font-size:13px;font-weight:600;color:var(--sub);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s}
+.tab:hover{color:var(--brand)}.tab.active{color:var(--brand);border-bottom-color:var(--brand)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.sec{background:var(--card);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.sec-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.sec-head h2{font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px}
+.sec-body{padding:14px 16px}
+.brand-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.bc{border-radius:7px;padding:10px 12px;border:1.5px solid transparent}
+.bc.filled{background:var(--green-bg);border-color:var(--green-b)}
+.bc.missing{background:var(--red-bg);border-color:var(--red-b)}
+.bc .bn{font-size:13px;font-weight:700;margin-bottom:3px}
+.bc.filled .bn{color:var(--green)}.bc.missing .bn{color:var(--red)}
+.bc .bs{font-size:11px;display:flex;align-items:center;gap:4px}
+.bc.filled .bs{color:#166534}.bc.missing .bs{color:#991B1B}
+.bc .bt{font-size:10px;color:var(--dim);margin-top:2px}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot.g{background:var(--green)}.dot.r{background:var(--red)}
+.al{display:flex;flex-direction:column}
+.ai{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:8px}
+.ai:last-child{border-bottom:none}
+.ai.acionado{opacity:.55;background:#F8FAFC}
+.abadge{flex-shrink:0;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;margin-top:1px}
+.badge-PREENCHIMENTO{background:#DCFCE7;color:#166534}
+.badge-FALTA_PREENCHIMENTO{background:#FEE2E2;color:#991B1B}
+.badge-ENTRADA{background:#FEF9C3;color:#713F12}
+.badge-SAIDA_ANORMAL{background:#FFEDD5;color:#7C2D12}
+.badge-ESTOQUE_MINIMO{background:#FEE2E2;color:#7F1D1D}
+.badge-ACIONADO{background:#DCFCE7;color:#166534}
+.ac .am{font-size:12px;font-weight:700;color:var(--brand)}
+.ac .amsg{font-size:12px;color:var(--text);margin-top:1px;line-height:1.4}
+.ac .at{font-size:10px;color:var(--dim);margin-top:2px}
+.ai.unread{background:#FAFBFF}
+.btn-acionar{background:#FEF9C3;border:1px solid #FDE68A;color:#78350F;padding:3px 9px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.btn-acionar:hover{background:#F59E0B;color:#fff;border-color:#F59E0B}
+.wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#F8FAFC;color:var(--sub);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#FAFBFF}
+.ok{background:#F0FDF4;color:#166534;font-weight:600;border-radius:4px;padding:2px 5px}
+.warn{background:#FFFBEB;color:#92400E;font-weight:600;border-radius:4px;padding:2px 5px}
+.crit{background:#FEF2F2;color:#991B1B;font-weight:700;border-radius:4px;padding:2px 5px}
+.na-cell{color:var(--dim);font-size:11px}
+.cov-wrap{display:flex;align-items:center;gap:6px;min-width:80px}
+.cov-bar{height:5px;border-radius:3px;background:#E2E8F0;flex:1;overflow:hidden}
+.cov-fill{height:100%;border-radius:3px}
+.cf-ok{background:var(--green)}.cf-warn{background:var(--yellow)}.cf-crit{background:var(--red)}
+.c-b2c{background:#DBEAFE;color:#1E40AF;border-radius:99px;padding:2px 7px;font-size:10px;font-weight:700}
+.c-b2b{background:#D1FAE5;color:#065F46;border-radius:99px;padding:2px 7px;font-size:10px;font-weight:700}
+.c-mkt{background:#EDE9FE;color:#5B21B6;border-radius:99px;padding:2px 7px;font-size:10px;font-weight:700}
+.chip{display:inline-flex;align-items:center;padding:2px 7px;border-radius:99px;font-size:11px;font-weight:600}
+.chip-ok{background:#DCFCE7;color:#166534}.chip-warn{background:#FEF9C3;color:#854D0E}.chip-crit{background:#FEE2E2;color:#991B1B}
+.trend-up{color:var(--green);font-weight:700}.trend-down{color:var(--red);font-weight:700}.trend-flat{color:var(--dim)}
+.sla-bar{height:8px;border-radius:4px;background:#E2E8F0;width:100px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:6px}
+.sla-fill{height:100%;border-radius:4px;background:var(--green)}
+.btn-sm{background:var(--bg);border:1px solid var(--border);color:var(--sub);padding:4px 11px;border-radius:5px;font-size:11px;cursor:pointer;transition:all .15s}
+.btn-sm:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
+.empty{text-align:center;padding:28px 0;color:var(--dim);font-size:13px}
+.footer{text-align:center;padding:14px;font-size:11px;color:var(--dim)}
+.wbox{background:#F8FAFC;border:1px solid var(--border);border-radius:7px;padding:12px 14px;margin-bottom:10px}
+.wbox code{font-family:monospace;font-size:11px;background:#1E293B;color:#7DD3FC;padding:7px 10px;border-radius:5px;display:block;margin-top:7px;word-break:break-all}
+.wlabel{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.4px}
+/* Forecast form */
+.fc-label{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:5px}
+.fc-input{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;transition:border-color .15s}
+.fc-input:focus{border-color:var(--blue)}
+@media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}.brand-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-icon">📦</div>
+    <div><div class="title">Hub de Gestão de Insumos</div><div class="meta">GoGroup · Monitoramento em tempo real</div></div>
+  </div>
+  <div class="hright">
+    <div class="badge-week" id="week-badge">Semana —</div>
+    <button class="btn-refresh" onclick="loadAll()"><span id="ri">⟳</span> Atualizar</button>
+  </div>
+</header>
+
+<main>
+<div class="tabs">
+  <div class="tab active" onclick="showTab('overview',this)">📊 Visão Geral</div>
+  <div class="tab" onclick="showTab('snapshot',this)">📦 Snapshot <span id="snap-badge"></span></div>
+  <div class="tab" onclick="showTab('alertas',this)">🔔 Alertas <span id="tab-alert-count"></span></div>
+  <div class="tab" onclick="showTab('analise',this)">📈 Análise</div>
+  <div class="tab" onclick="showTab('historico',this)">📜 Histórico</div>
+  <div class="tab" onclick="showTab('fornecedores',this)">🏭 Fornecedores</div>
+  <div class="tab" onclick="showTab('estoque',this)">📋 Est. Mínimo</div>
+  <div class="tab" onclick="showTab('params',this)">🔧 Parâmetros</div>
+  <div class="tab" onclick="showTab('forecast',this)">🎯 Forecast</div>
+  <div class="tab" onclick="showTab('plan',this)">🧮 Planejamento</div>
+  <div class="tab" onclick="showTab('compra',this)">🛒 Sugestão de Compra</div>
+  <div class="tab" onclick="showTab('config',this)">⚙️ Config</div>
+</div>
+
+<!-- ── VISÃO GERAL ──────────────────────────────── -->
+<div id="tab-overview">
+  <div class="stats-grid">
+    <div class="stat-card green"><div class="slabel">Marcas preenchidas</div><div class="sval" id="s-filled">—</div><div class="ssub" id="s-filled-sub">semana atual</div></div>
+    <div class="stat-card red"><div class="slabel">Estoque crítico</div><div class="sval" id="s-crit">—</div><div class="ssub">itens abaixo do alerta</div></div>
+    <div class="stat-card orange"><div class="slabel">Aguardando ação</div><div class="sval" id="s-action">—</div><div class="ssub">críticos não acionados</div></div>
+    <div class="stat-card yellow"><div class="slabel">Inconsistências</div><div class="sval" id="s-incons">—</div><div class="ssub">entradas / saídas anormais</div></div>
+    <div class="stat-card blue"><div class="slabel">Alertas não lidos</div><div class="sval" id="s-total">—</div><div class="ssub">total na fila</div></div>
+  </div>
+  <div class="grid2">
+    <div class="sec">
+      <div class="sec-head"><h2>🏷️ Semana Atual</h2><span style="font-size:11px;color:var(--sub)" id="fills-meta"></span></div>
+      <div class="sec-body"><div class="brand-grid" id="brand-grid-cur"></div></div>
+    </div>
+    <div class="sec">
+      <div class="sec-head"><h2>🗓️ Último Snapshot — Semana 27 (03/07)</h2><span style="font-size:11px;color:var(--sub)">5/5</span></div>
+      <div class="sec-body"><div class="brand-grid" id="brand-grid-27"></div></div>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="sec-head"><h2>🔔 Alertas Recentes</h2><button class="btn-sm" onclick="readAll()">Marcar lidos</button></div>
+    <div class="al" id="alert-mini"></div>
+  </div>
+</div>
+
+<!-- ── SNAPSHOT ─────────────────────────────────── -->
+<div id="tab-snapshot" style="display:none">
+  <div class="sec">
+    <div class="sec-head">
+      <h2>📦 Snapshot Atual — Cobertura e Sugestão de Pedido</h2>
+      <div style="display:flex;gap:8px">
+        <select id="snap-ano" onchange="recarregarPools()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px"><option>2026</option></select>
+        <select id="snap-mes" onchange="recarregarPools()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+          <option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option>
+          <option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option>
+          <option value="7">Jul</option><option value="8">Ago</option><option value="9">Set</option>
+          <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
+        </select>
+        <select id="snap-f-cd" onchange="renderSnapshot()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+          <option value="">Todos os CDs</option><option>ES</option><option>RJ</option><option>SP</option>
+        </select>
+        <select id="snap-f-canal" onchange="renderSnapshot()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+          <option value="">Todos os canais</option><option>B2C</option><option>B2B</option><option>MARKETPLACE</option>
+        </select>
+        <select id="snap-f-marca" onchange="renderSnapshot()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+          <option value="">Todas as marcas</option>
+          <option>BB</option><option>AP</option><option>LE</option><option>KOKESHI</option><option>RITUÁRIA</option>
+        </select>
+        <select id="snap-f-insumo" onchange="renderSnapshot()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+          <option value="">Todos os insumos</option>
+          <option value="caixa_pp">Caixa PP</option><option value="caixa_p">Caixa P</option>
+          <option value="caixa_m">Caixa M</option><option value="caixa_g">Caixa G</option>
+          <option value="caixa_gg">Caixa GG</option><option value="envelope_p">Env. P</option>
+          <option value="envelope_m">Env. M</option><option value="fita_gomada">Fita Gomada</option>
+          <option value="fill_pack">FillPack</option>
+        </select>
+      </div>
+    </div>
+    <div class="wrap">
+      <table>
+        <thead><tr>
+          <th>Marca</th><th>CD</th><th>Canal</th><th>Sem.</th>
+          <th>Caixa PP</th><th>Caixa P</th><th>Caixa M</th><th>Caixa G</th><th>Caixa GG</th>
+          <th>Env. P</th><th>Env. M</th><th>Fita Gomada</th><th>FillPack</th>
+          <th>Status</th>
+        </tr></thead>
+        <tbody id="snap-body"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="sec-head">
+      <h2>🏭 Visão Consolidada por CD</h2>
+      <span style="font-size:11px;color:var(--sub)">Estoque agregado de todas as marcas no CD</span>
+    </div>
+    <div class="wrap">
+      <div id="cd-view-nota" style="font-size:11px;color:var(--sub);margin-bottom:8px"></div>
+        <table id="cd-view-table">
+        <thead><tr>
+          <th>CD</th><th>Canais</th>
+          <th>Caixa PP</th><th>Caixa P</th><th>Caixa M</th><th>Caixa G</th><th>Caixa GG</th>
+          <th>Env. P</th><th>Env. M</th><th>Fita Gomada</th><th>FillPack</th>
+          <th>Status</th>
+        </tr></thead>
+        <tbody id="cd-view-body"><tr><td colspan="12" class="empty">Carregando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="sec-head"><h2>🔴 Insumos Críticos e 🟡 Alertas — Ação Imediata (por pool físico)</h2><span id="crit-snap-count" style="font-size:11px;color:var(--sub)"></span></div>
+    <div class="wrap">
+      <table>
+        <thead><tr><th>Pool físico</th><th>CD</th><th>Status</th><th>Insumo</th><th>Estoque do pool</th><th>Mínimo</th><th>Cobertura</th><th>Consumo no LT</th><th>Lead Time</th><th>Em trânsito</th><th>Fornecedor Principal</th><th>Emergência</th></tr></thead>
+        <tbody id="crit-snap-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── ALERTAS ───────────────────────────────────── -->
+<div id="tab-alertas" style="display:none">
+  <div class="sec">
+    <div class="sec-head">
+      <h2>🔔 Todos os Alertas</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="alert-filter" onchange="loadAlerts()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+          <option value="">Todos</option>
+          <option value="FALTA_PREENCHIMENTO">Falta preenchimento</option>
+          <option value="PREENCHIMENTO">Preenchimento OK</option>
+          <option value="ENTRADA">Entrada detectada</option>
+          <option value="SAIDA_ANORMAL">Saída anormal</option>
+          <option value="ESTOQUE_MINIMO">Estoque crítico</option>
+        </select>
+        <label style="font-size:11px;display:flex;align-items:center;gap:4px;cursor:pointer">
+          <input type="checkbox" id="hide-acionado" onchange="loadAlerts()"> Ocultar acionados
+        </label>
+        <button class="btn-sm" onclick="readAll()">Marcar lidos</button>
+      </div>
+    </div>
+    <div class="al" id="alert-full"></div>
+  </div>
+</div>
+
+<!-- ── ANÁLISE ───────────────────────────────────── -->
+<div id="tab-analise" style="display:none">
+  <div class="grid2">
+    <div class="sec">
+      <div class="sec-head"><h2>📊 SLA de Preenchimento</h2><span style="font-size:11px;color:var(--sub)">taxa de fill semanal por marca</span></div>
+      <div class="wrap"><table>
+        <thead><tr><th>Marca</th><th>Taxa Fill</th><th>Total Semanas</th><th>Sem. Faltou</th><th>Último Fill</th><th>Atraso</th></tr></thead>
+        <tbody id="sla-body"></tbody>
+      </table></div>
+    </div>
+    <div class="sec">
+      <div class="sec-head"><h2>📈 Tendência de Consumo</h2><span style="font-size:11px;color:var(--sub)">semana atual vs anterior</span></div>
+      <div class="wrap"><table>
+        <thead><tr><th>Marca</th><th>CD</th><th>Insumo</th><th>Semana Ant.</th><th>Semana Atual</th><th>Variação</th></tr></thead>
+        <tbody id="trend-body"></tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── HISTÓRICO ─────────────────────────────────── -->
+<div id="tab-historico" style="display:none">
+  <div class="sec">
+    <div class="sec-head">
+      <h2>📜 Histórico de Estoque por Semana</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="hist-f-cd" onchange="renderHistorico()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+          <option value="">Todos os CDs</option><option>ES</option><option>RJ</option><option>SP</option>
+        </select>
+        <select id="hist-f-marca" onchange="loadHistorico()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+          <option value="">Todas as marcas</option>
+          <option>BB</option><option>AP</option><option>LE</option><option>KOKESHI</option><option>RITUÁRIA</option>
+        </select>
+        <select id="hist-f-canal" onchange="renderHistorico()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+          <option value="">Todos os canais</option><option>B2C</option><option>B2B</option><option>MARKETPLACE</option>
+        </select>
+        <span style="font-size:11px;color:var(--sub)">🟡 = entrada detectada</span>
+      </div>
+    </div>
+    <div class="wrap">
+      <table><thead><tr>
+        <th>Sem.</th><th>Marca</th><th>CD</th><th>Canal</th>
+        <th>Caixa PP</th><th>Caixa P</th><th>Caixa M</th><th>Caixa G</th><th>Caixa GG</th>
+        <th>Env. P</th><th>Env. M</th><th>Fita</th><th>FillPack</th>
+      </tr></thead>
+      <tbody id="hist-body"><tr><td colspan="13" class="empty">Clique na aba para carregar</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="sec-head"><h2>📥 Entradas Detectadas</h2><span id="entrada-count" style="font-size:11px;color:var(--sub)"></span></div>
+    <div class="wrap"><table>
+      <thead><tr><th>Sem.</th><th>Marca</th><th>CD</th><th>Canal</th><th>Insumo</th><th>Semana Ant.</th><th>Semana Atual</th><th>Entrada</th></tr></thead>
+      <tbody id="entrada-body"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ── FORNECEDORES ──────────────────────────────── -->
+<div id="tab-fornecedores" style="display:none">
+  <div class="sec">
+    <div class="sec-head">
+      <h2>🏭 Fornecedores de Insumos</h2>
+      <select id="forn-filter" onchange="renderFornecedores()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+        <option value="">Todos os insumos</option>
+        <option>Caixa PP</option><option>Caixa P</option><option>Caixa M</option><option>Caixa G</option><option>Caixa GG</option>
+        <option>Fita Gomada</option><option>FillPack</option><option>Papel Colmeia</option><option>Plástico Bolha</option>
+      </select>
+    </div>
+    <div class="wrap"><table>
+      <thead><tr><th>Tipo</th><th>Insumo</th><th>Fornecedor</th><th>CNPJ</th><th>Contato</th><th>Preço Unit.</th><th>Und.</th><th>UF</th><th>Canal</th></tr></thead>
+      <tbody id="forn-body"><tr><td colspan="8" class="empty">Carregando...</td></tr></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ── ESTOQUE MÍNIMO ────────────────────────────── -->
+<div id="tab-estoque" style="display:none">
+  <div class="sec">
+    <div class="sec-head"><h2>📋 Estoque Mínimo</h2>
+      <span style="font-size:11px;color:var(--sub)">Lead times: PP=12d · P/M=7d · G/GG=9d · Fita=16d · FP=7.5d</span>
+    </div>
+    <div class="wrap"><table>
+      <thead><tr><th>Marca</th><th>CD</th><th>Insumo</th><th>Est. Mínimo</th><th>Limite Alerta (130%)</th><th>Consumo/mês</th><th>Consumo/dia</th><th>Lead Time</th><th>Ponto de Pedido</th></tr></thead>
+      <tbody id="em-body"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ── PARÂMETROS ────────────────────────────────── -->
+<div id="tab-params" style="display:none">
+  <div class="grid2">
+    <div class="sec">
+      <div class="sec-head"><h2>⏱️ Lead Times por Insumo (dias)</h2></div>
+      <div class="sec-body">
+        <table style="width:100%;font-size:13px">
+          <thead><tr><th>Insumo</th><th>Lead Time (dias)</th></tr></thead>
+          <tbody id="params-lead-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-head"><h2>⚙️ Parâmetros Gerais</h2></div>
+      <div class="sec-body" style="display:flex;flex-direction:column;gap:14px">
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">Fator de Segurança</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input id="param-fator_seguranca" type="number" step="0.05" min="0" max="2" style="width:90px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+            <span id="fator-pct" style="font-size:13px;color:var(--sub)"></span>
+          </div>
+          <p style="font-size:11px;color:var(--dim);margin-top:4px">Buffer sobre o lead time. 0.5 = 50% extra.</p>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">Threshold de Alerta</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input id="param-alerta_fator" type="number" step="0.05" min="1" max="3" style="width:90px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+            <span style="font-size:13px;color:var(--sub)">× estoque mínimo</span>
+          </div>
+          <p style="font-size:11px;color:var(--dim);margin-top:4px">Padrão: 1.3 (130%)</p>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">Meta de Reposição (meses)</label>
+          <input id="param-meta_reposicao" type="number" step="0.5" min="1" max="6" style="width:90px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">Fita Gomada — kg por bobina</label>
+          <input id="param-fita_kg_por_bobina" type="number" step="0.01" min="0.5" max="5" style="width:90px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="sec-head">
+      <h2>📊 Preview — Estoque Mínimo Calculado</h2>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span style="font-size:11px;color:var(--sub)">consumo_diário × lead_time × (1 + fator_seg)</span>
+        <button class="btn-acionar" onclick="saveParams()">💾 Salvar e Recalcular</button>
+      </div>
+    </div>
+    <div class="wrap"><table>
+      <thead><tr><th>Marca</th><th>CD</th><th>Insumo</th><th>Consumo/mês</th><th>Und.</th><th>Lead Time</th><th>Est. Mínimo</th><th>Alerta (threshold)</th><th>Cobertura mín (dias)</th></tr></thead>
+      <tbody id="params-preview-body"></tbody>
+    </table></div>
+  </div>
+  <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:14px;font-size:12px;color:#92400E;margin-top:4px">
+    ⚠️ Salvar recalcula todos os estoques mínimos imediatamente.
+  </div>
+</div>
+
+<!-- ── FORECAST ───────────────────────────────────── -->
+<div id="tab-forecast" style="display:none">
+  <div class="grid2">
+    <!-- Formulário de entrada -->
+    <div class="sec">
+      <div class="sec-head">
+        <h2>🎯 Informar Forecast</h2>
+        <span id="fc-status-msg" style="font-size:11px;color:var(--green)"></span>
+      </div>
+      <div class="sec-body" style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label class="fc-label">Ano</label>
+            <input id="fc-ano" type="number" min="2024" max="2030" value="2026" class="fc-input">
+          </div>
+          <div>
+            <label class="fc-label">Mês</label>
+            <select id="fc-mes" class="fc-input">
+              <option value="1">Janeiro</option><option value="2">Fevereiro</option>
+              <option value="3">Março</option><option value="4">Abril</option>
+              <option value="5">Maio</option><option value="6">Junho</option>
+              <option value="7">Julho</option><option value="8" selected>Agosto</option>
+              <option value="9">Setembro</option><option value="10">Outubro</option>
+              <option value="11">Novembro</option><option value="12">Dezembro</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label class="fc-label">Marca</label>
+            <select id="fc-marca" class="fc-input" onchange="updateDistPreview()">
+              <option value="">-- Selecione --</option>
+              <option>BB</option><option>AP</option><option>LE</option>
+              <option>KOKESHI</option><option>RITUÁRIA</option>
+            </select>
+          </div>
+          <div>
+            <label class="fc-label">Canal</label>
+            <select id="fc-canal" class="fc-input">
+              <option value="B2C">B2C (Varejo)</option>
+              <option value="MARKETPLACE">Marketplace</option>
+              <option value="B2B">B2B</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="fc-label">Forecast de Pedidos</label>
+          <input id="fc-pedidos" type="number" min="0" placeholder="Ex: 100000" class="fc-input" oninput="updateDistPreview()">
+        </div>
+        <!-- Preview automático de distribuição -->
+        <div id="fc-dist-preview" style="display:none;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:7px;padding:10px 12px">
+          <div style="font-size:11px;font-weight:700;color:var(--blue);margin-bottom:6px">📐 Distribuição calculada por CD</div>
+          <div id="fc-dist-rows"></div>
+          <div style="font-size:10px;color:var(--dim);margin-top:6px">% lida da tabela Mix CD — não hardcoded</div>
+        </div>
+        <button onclick="saveForecast()" style="background:var(--brand);color:#fff;border:none;padding:10px 18px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;width:100%;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+          💾 Salvar Forecast
+        </button>
+      </div>
+    </div>
+
+    <!-- Mix CD de referência -->
+    <div class="sec">
+      <div class="sec-head">
+        <h2>📐 Mix de Distribuição por CD</h2>
+        <span style="font-size:11px;color:var(--sub)">base do cálculo automático</span>
+      </div>
+      <div class="wrap">
+        <table>
+          <thead><tr><th>Marca</th><th>CD</th><th>% do Forecast</th></tr></thead>
+          <tbody id="fc-mix-body"><tr><td colspan="3" class="empty">Carregando...</td></tr></tbody>
+        </table>
+      </div>
+      <div style="padding:10px 14px;background:#FFFBEB;border-top:1px solid var(--border);font-size:11px;color:#92400E">
+        ℹ️ CD não é input obrigatório. O Forecast é informado por Marca e Canal — a distribuição por CD é calculada automaticamente.
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabela de Forecast vigente -->
+  <div class="sec">
+    <div class="sec-head">
+      <h2>📋 Forecast Vigente</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="fc-filter-ano" onchange="loadForecast()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+          <option value="2026">2026</option><option value="2025">2025</option>
+        </select>
+        <select id="fc-filter-mes" onchange="loadForecast()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+          <option value="">Todos os meses</option>
+          <option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option>
+          <option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option>
+          <option value="7">Jul</option><option value="8" selected>Ago</option>
+          <option value="9">Set</option><option value="10">Out</option>
+          <option value="11">Nov</option><option value="12">Dez</option>
+        </select>
+      </div>
+    </div>
+    <div class="wrap">
+      <table>
+        <thead><tr>
+          <th>Marca</th><th>Canal</th><th>Mês/Ano</th>
+          <th>Forecast Total</th><th>Distribuição por CD</th>
+          <th>Atualizado</th><th>Ações</th>
+        </tr></thead>
+        <tbody id="fc-table-body"><tr><td colspan="7" class="empty">Carregando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── PLANEJAMENTO ──────────────────────────────── -->
+<div id="tab-plan" style="display:none">
+  <div class="sec">
+    <div class="sec-head">
+      <h2>⚙️ Premissas em uso</h2>
+      <span style="font-size:11px;color:var(--sub)">tudo lido de parametros / fatores_consumo / mix_caixas</span>
+    </div>
+    <div class="sec-body">
+      <div id="plan-cfg" style="display:flex;gap:18px;flex-wrap:wrap;font-size:12px"></div>
+      <div id="plan-diverg" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head">
+      <h2>🔎 Simulador / Auditoria</h2>
+      <span style="font-size:11px;color:var(--sub)">confira de onde saiu cada número</span>
+    </div>
+    <div class="sec-body">
+      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+        <div><label class="fc-label">Marca</label>
+          <select id="sim-marca" class="fc-input" style="width:140px">
+            <option>BB</option><option>AP</option><option>LE</option>
+            <option>KOKESHI</option><option>RITUÁRIA</option>
+            <option>AUA</option><option>BY SAMIA</option>
+          </select></div>
+        <div><label class="fc-label">CD</label>
+          <select id="sim-cd" class="fc-input" style="width:90px"><option>ES</option><option>RJ</option></select></div>
+        <div><label class="fc-label">Canal</label>
+          <select id="sim-canal" class="fc-input" style="width:150px">
+            <option>B2C</option><option>MARKETPLACE</option><option>B2B</option></select></div>
+        <div><label class="fc-label">Pedidos</label>
+          <input id="sim-ped" type="number" value="173231" class="fc-input" style="width:130px"></div>
+        <button onclick="simular()" style="background:var(--brand);color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer">Calcular</button>
+      </div>
+      <div id="sim-out" style="margin-top:14px"></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head">
+      <h2>📐 Planejamento a partir do Forecast vigente</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="plan-ano" onchange="loadPlan()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px"><option>2026</option></select>
+        <select id="plan-mes" onchange="loadPlan()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+          <option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option>
+          <option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option>
+          <option value="7">Jul</option><option value="8" selected>Ago</option><option value="9">Set</option>
+          <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
+        </select>
+        <select id="plan-insumo" onchange="renderPlan()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+          <option value="">Insumo: todos</option>
+          <option>Fita Gomada</option><option>FillPack</option>
+          <option>Caixa PP</option><option>Caixa P</option><option>Caixa M</option>
+          <option>Caixa G</option><option>Caixa GG</option>
+        </select>
+        <select id="plan-status" onchange="renderPlan()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+          <option value="">Status: todos</option>
+          <option value="OK">🟢 OK</option>
+          <option value="ALERTA">🟡 ALERTA</option>
+          <option value="CRITICO">🔴 CRÍTICO</option>
+          <option value="SEM_ESTOQUE">Sem estoque informado</option>
+          <option value="NAO_UTILIZA">Não utiliza</option>
+          <option value="FATOR_NAO_DEFINIDO">Fator não definido</option>
+          <option value="MIX_ZERO">Mix 0%</option>
+        </select>
+        <button class="btn-acionar" onclick="aplicarEM()">💾 Aplicar est. mínimo</button>
+      </div>
+    </div>
+    <div class="sec-body" id="plan-out"><div class="empty">Carregando...</div></div>
+  </div>
+</div>
+
+<!-- ── SUGESTÃO DE COMPRA ───────────────────────── -->
+<div id="tab-compra" style="display:none">
+  <div class="sec">
+    <div class="sec-head">
+      <h2>🚚 Estoque em trânsito</h2>
+      <span style="font-size:11px;color:var(--sub)">comprado, ainda não recebido no CD — abate apenas a Sugestão de Compra</span>
+    </div>
+    <div class="sec-body">
+      <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px">
+        <div><label class="fc-label">Tipo</label>
+          <select id="tr-tipo" class="fc-input" style="width:180px" onchange="trToggleTipo()">
+            <option value="COMPRA_FORNECEDOR">Compra de fornecedor</option>
+            <option value="TRANSFERENCIA_CD">Transferência entre CDs</option>
+          </select></div>
+        <div id="tr-origem-wrap" style="display:none"><label class="fc-label">CD origem</label>
+          <select id="tr-origem" class="fc-input" style="width:90px"><option>ES</option><option>RJ</option></select></div>
+        <div id="tr-saida-wrap" style="display:none"><label class="fc-label">Data de saída</label>
+          <input id="tr-saida" type="date" class="fc-input" style="width:150px"></div>
+        <div><label class="fc-label" id="tr-cd-label">CD</label>
+          <select id="tr-cd" class="fc-input" style="width:80px"><option>ES</option><option>RJ</option></select></div>
+        <div><label class="fc-label">Insumo</label>
+          <select id="tr-insumo" class="fc-input" style="width:140px" onchange="trSyncPools()">
+            <option>Caixa PP</option><option>Caixa P</option><option>Caixa M</option>
+            <option>Caixa G</option><option>Caixa GG</option>
+            <option>Fita Gomada</option><option>FillPack</option>
+          </select></div>
+        <div><label class="fc-label">Marca / Pool</label>
+          <select id="tr-pool" class="fc-input" style="width:230px"></select></div>
+        <div><label class="fc-label">Canal</label>
+          <select id="tr-canal" class="fc-input" style="width:110px"><option>B2C</option><option>MARKETPLACE</option><option>B2B</option></select></div>
+        <div><label class="fc-label">Quantidade</label>
+          <input id="tr-qtd" type="number" min="0" step="0.01" class="fc-input" style="width:110px"></div>
+        <div><label class="fc-label">Unidade</label>
+          <select id="tr-un" class="fc-input" style="width:90px"><option>UN</option><option>BOBINA</option></select></div>
+        <div><label class="fc-label">Chegada prevista</label>
+          <input id="tr-data" type="date" class="fc-input" style="width:150px"></div>
+        <div style="flex:1;min-width:160px"><label class="fc-label">Observação</label>
+          <input id="tr-obs" type="text" class="fc-input" style="width:100%"></div>
+        <button id="tr-save" onclick="salvarTransito()" style="background:var(--brand);color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer">Adicionar</button>
+        <button id="tr-cancel" onclick="cancelarEdicaoTransito()" style="display:none;background:#F1F5F9;border:1px solid var(--border);padding:8px 14px;border-radius:6px;font-size:12px;cursor:pointer">Cancelar</button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+        <span style="font-size:11px;color:var(--sub)">Filtrar:</span>
+        <select id="tr-filtro" onchange="renderTransito()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+          <option value="">TODOS</option>
+          <option value="EM_TRANSITO">EM_TRANSITO</option>
+          <option value="PREVISAO_VENCIDA">PREVISAO_VENCIDA</option>
+          <option value="RECEBIDO">RECEBIDO</option>
+        </select>
+        <span id="tr-resumo" style="font-size:11px;color:var(--sub)"></span>
+      </div>
+      <div id="tr-out"><div class="empty">Carregando...</div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head">
+      <h2>🛒 Sugestão de Compra</h2>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select id="sc-ano" onchange="loadCompra()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px"><option>2026</option></select>
+        <select id="sc-mes" onchange="loadCompra()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+          <option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option>
+          <option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option>
+          <option value="7">Jul</option><option value="8" selected>Ago</option><option value="9">Set</option>
+          <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
+        </select>
+        <select id="sc-visao" onchange="trocarVisaoCompra()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px;font-weight:700">
+          <option value="mes">Visão: mês único</option>
+          <option value="horizonte">Visão: horizonte até…</option>
+        </select>
+        <select id="sc-ate" onchange="loadHorizonte()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px;display:none">
+          <option value="9">…Set</option><option value="10">…Out</option>
+          <option value="11">…Nov</option><option value="12" selected>…Dez</option>
+        </select>
+        <select id="sc-insumo" onchange="renderCompra()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+          <option value="">Insumo: todos</option>
+          <option>Fita Gomada</option><option>FillPack</option>
+          <option>Caixa PP</option><option>Caixa P</option><option>Caixa M</option>
+          <option>Caixa G</option><option>Caixa GG</option>
+        </select>
+        <select id="sc-cd" onchange="renderCompra()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+          <option value="">CD: todos</option><option>ES</option><option>RJ</option></select>
+        <select id="sc-fiscal" onchange="renderCompra()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+          <option value="">Visão: pools</option>
+          <option value="analitico">Visão: analítica (marca+CD)</option>
+          <option value="pedido">Visão: pedido por faturamento</option>
+        </select>
+        <select id="sc-marca" onchange="renderCompra()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+          <option value="">Marca: todas</option>
+          <option>AP</option><option>BB</option><option>KOKESHI</option>
+          <option>LE</option><option>RITUÁRIA</option>
+        </select>
+        <select id="sc-tipo" onchange="renderCompra()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+          <option value="">Tipo: todos</option>
+          <option value="CAIXA">Caixa</option>
+          <option value="FITA">Fita</option>
+          <option value="PREENCHIMENTO">Preenchimento</option>
+        </select>
+        <select id="sc-status" onchange="renderCompra()" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px">
+          <option value="">Status: todos</option>
+          <option value="OK">🟢 OK</option><option value="ALERTA">🟡 ALERTA</option>
+          <option value="CRITICO">🔴 CRÍTICO</option><option value="SEM_ESTOQUE">Sem estoque</option>
+        </select>
+        <button class="btn-acionar" onclick="exportarCompraXLSX()">📥 Exportar XLSX</button>
+      </div>
+    </div>
+    <div class="sec-body" id="sc-out"><div class="empty">Carregando...</div></div>
+  </div>
+</div>
+
+<!-- ── CONFIG ───────────────────────────────────── -->
+<div id="tab-config" style="display:none">
+  <div class="grid2">
+    <div class="sec">
+      <div class="sec-head"><h2>🔌 Webhooks</h2></div>
+      <div class="sec-body">
+        <div class="wbox"><div class="wlabel">Submit (após preenchimento)</div><code id="wh-submit">POST [URL]/api/webhook/submit</code></div>
+        <div class="wbox"><div class="wlabel">Check-Week (cron sexta 18h)</div><code id="wh-check">POST [URL]/api/webhook/check-week</code></div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-head"><h2>🔑 Secrets</h2></div>
+      <div class="sec-body" style="display:flex;flex-direction:column;gap:9px">
+        <div style="background:#F8FAFC;border:1px solid var(--border);border-radius:7px;padding:11px">
+          <div class="wlabel">RESEND_API_KEY</div>
+          <p style="font-size:12px;margin-top:3px">Chave da API Resend</p>
+        </div>
+        <div style="background:#F8FAFC;border:1px solid var(--border);border-radius:7px;padding:11px">
+          <div class="wlabel">ALERT_EMAIL</div>
+          <p style="font-size:12px;margin-top:3px">Destinatário de todos os alertas</p>
+        </div>
+        <div style="background:#F8FAFC;border:1px solid var(--border);border-radius:7px;padding:11px">
+          <div class="wlabel">GOOGLE_CHAT_WEBHOOK ✅</div>
+          <p style="font-size:12px;margin-top:3px">Webhook do Google Chat — <strong>configurado</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+<div class="footer" id="footer-time"></div>
+
+<script>
+let dashData=null, alertsData=[], snapData=[], emData=[], histData=[], fornData=[], slaData=[], trendData=[]
+let forecastDist=[], mixData=[]
+// Pools físicos vindos de /api/pools/status — mesma classificação usada pelo
+// Snapshot detalhado, pela Visão Consolidada, pelo contador e pela lista de
+// ação imediata. Não recalcular status no cliente.
+let poolsAtual=[]
+const poolPor=(insumo,cd)=>poolsAtual.filter(p=>p.insumo===insumo&&p.cd===cd)
+
+// Período do Snapshot. A cobertura, o mínimo e o status vêm do consumo
+// projetado do Forecast — logo dependem do mês analisado, exatamente como
+// na Sugestão de Compra. Default: o mesmo mês já selecionado na aba de
+// compra, para as duas telas nunca olharem períodos diferentes por acidente.
+function periodoSnapQS(){
+  const a=document.getElementById('snap-ano')?.value
+  const m=document.getElementById('snap-mes')?.value
+  return (a&&m)?`?ano=${a}&mes=${m}`:''
+}
+
+async function recarregarPools(){
+  try{
+    poolsAtual=await(await fetch('/api/pools/status'+periodoSnapQS())).json()
+    snapData=await(await fetch('/api/snapshot'+periodoSnapQS())).json()
+    renderSnapshot();renderCritSnap()
+  }catch(e){console.error(e)}
+}
+
+// Sincroniza o mês do Snapshot com o da Sugestão de Compra na primeira carga.
+function sincronizarPeriodoSnapshot(){
+  const sa=document.getElementById('sc-ano'),sm=document.getElementById('sc-mes')
+  const na=document.getElementById('snap-ano'),nm=document.getElementById('snap-mes')
+  if(!na||!nm) return
+  if(sa&&sa.value) na.value=sa.value
+  if(sm&&sm.value) nm.value=sm.value
+  else nm.value=String(new Date().getMonth()+1)
+}
+const ST2CLS={CRITICO:'crit',ALERTA:'warn',OK:'ok',SEM_ESTOQUE:''}
+
+const SNAP_INS=[
+  {field:'caixa_pp',th:'Caixa PP',label:'Caixa PP'},{field:'caixa_p',th:'Caixa P',label:'Caixa P'},
+  {field:'caixa_m',th:'Caixa M',label:'Caixa M'},{field:'caixa_g',th:'Caixa G',label:'Caixa G'},
+  {field:'caixa_gg',th:'Caixa GG',label:'Caixa GG'},{field:'envelope_p',th:'Env. P',label:'Envelope P'},
+  {field:'envelope_m',th:'Env. M',label:'Envelope M'},{field:'fita_gomada',th:'Fita Gomada',label:'Fita Gomada'},
+  {field:'fill_pack',th:'FillPack',label:'FillPack'}
+]
+const LEAD={'Caixa PP':12,'Caixa P':7,'Caixa M':7,'Caixa G':9,'Caixa GG':9,'Fita Gomada':16,'FillPack':7.5}
+const INS_FIELDS={caixa_pp:'Caixa PP',caixa_p:'Caixa P',caixa_m:'Caixa M',caixa_g:'Caixa G',caixa_gg:'Caixa GG',envelope_p:'Envelope P',envelope_m:'Envelope M',fita_gomada:'Fita Gomada',fill_pack:'FillPack'}
+const MESES=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
+
+function showTab(name,el){
+  document.querySelectorAll('[id^="tab-"]').forEach(t=>t.style.display='none')
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'))
+  document.getElementById('tab-'+name).style.display=''
+  el.classList.add('active')
+  if(name==='snapshot') loadSnapshot()
+  if(name==='alertas') loadAlerts()
+  if(name==='params') loadParams()
+  if(name==='analise') loadAnalise()
+  if(name==='historico') loadHistorico()
+  if(name==='fornecedores') loadFornecedores()
+  if(name==='estoque') loadEM()
+  if(name==='config') setWHUrls()
+  if(name==='forecast'){loadForecast();loadMixCD()}
+  if(name==='plan'){loadPremissas();loadPlan()}
+  if(name==='compra'){loadTransito();loadCompra()}
+}
+
+// ── Fonte mestre de CDs (v68) ────────────────────────────────────────────────
+// Um único ponto de verdade para os 4 CDs reconhecidos pelo Hub, usado para
+// preencher todos os seletores de CD da interface. Tenta sincronizar com o
+// backend (/api/config/cds); o array abaixo é só o fallback caso a rede falhe
+// no primeiro carregamento — não é uma segunda fonte de verdade divergente,
+// é a mesma lista hoje vigente no backend (ES/RJ/SP/MG).
+let CDS_OFICIAIS=['ES','RJ','SP','MG']
+function renderCDOptions(){
+  const comTodos=CDS_OFICIAIS.map(c=>`<option>${c}</option>`).join('')
+  const alvoComTodos=['snap-f-cd','hist-f-cd']
+  const alvoSemTodos=['sim-cd','tr-origem','tr-cd']
+  for(const id of alvoComTodos){
+    const el=document.getElementById(id)
+    if(el) el.innerHTML='<option value="">Todos os CDs</option>'+comTodos
+  }
+  for(const id of alvoSemTodos){
+    const el=document.getElementById(id)
+    if(el) el.innerHTML=comTodos
+  }
+  const sc=document.getElementById('sc-cd')
+  if(sc) sc.innerHTML='<option value="">CD: todos</option>'+comTodos
+}
+renderCDOptions()
+fetch('/api/config/cds').then(r=>r.json()).then(d=>{
+  if(Array.isArray(d.cds)&&d.cds.length){CDS_OFICIAIS=d.cds;renderCDOptions()}
+}).catch(()=>{})
+
+async function loadAll(){
+  const icon=document.getElementById('ri');icon.classList.add('spin')
+  try{await Promise.all([loadDash(),loadAlerts()])}
+  finally{icon.classList.remove('spin');document.getElementById('footer-time').textContent='Última atualização: '+new Date().toLocaleString('pt-BR')}
+}
+async function loadDash(){try{dashData=await(await fetch('/api/dashboard')).json();renderDash()}catch(e){console.error(e)}}
+async function loadAlerts(){
+  const tipo=document.getElementById('alert-filter')?.value||''
+  const hideAcionado=document.getElementById('hide-acionado')?.checked
+  let url='/api/alertas?limit=100'+(tipo?'&tipo='+tipo:'')+(hideAcionado?'&acionado=0':'')
+  try{alertsData=await(await fetch(url)).json();renderAlertMini();renderAlertFull()}catch(e){console.error(e)}
+}
+async function loadSnapshot(){
+  sincronizarPeriodoSnapshot()
+  if(!snapData.length) try{snapData=await(await fetch('/api/snapshot')).json()}catch(e){return}
+  // Fonte única de verdade do Status: os pools físicos calculados no backend.
+  if(!poolsAtual.length) try{poolsAtual=await(await fetch('/api/pools/status'+periodoSnapQS())).json()}catch(e){}
+  if(!fornData.length) try{fornData=await(await fetch('/api/fornecedores')).json()}catch(e){}
+  renderSnapshot();renderCritSnap()
+}
+async function loadAnalise(){
+  if(!slaData.length) try{slaData=await(await fetch('/api/sla')).json()}catch(e){}
+  if(!trendData.length) try{trendData=await(await fetch('/api/tendencia')).json()}catch(e){}
+  renderSLA();renderTrend()
+}
+async function loadHistorico(){
+  const marca=document.getElementById('hist-f-marca')?.value||''
+  try{histData=await(await fetch('/api/historico?limit=200'+(marca?'&marca='+encodeURIComponent(marca):''))).json()}catch(e){return}
+  renderHistorico()
+}
+async function loadFornecedores(){
+  if(!fornData.length) try{fornData=await(await fetch('/api/fornecedores')).json()}catch(e){}
+  renderFornecedores()
+}
+async function loadEM(){
+  if(!emData.length) try{emData=await(await fetch('/api/estoque-minimo')).json()}catch(e){}
+  const tbody=document.getElementById('em-body')
+  tbody.innerHTML=emData.map(r=>{
+    const lt=LEAD[r.insumo]||'—'
+    // v71: consumo/mês e consumo/dia REAIS — os mesmos que geraram o est_min
+    // gravado (Forecast, mesmo raciocínio de Sugestão de Compra/Planejamento;
+    // ou o caminho legado de consumo_mensal, quando foi esse que gravou a
+    // linha). Sem essa origem gravada (linha antiga, anterior a este ajuste),
+    // mostra "—" em vez de arriscar um número que pode não bater.
+    const temReal=r.consumo_dia!=null
+    const dailyTxt=temReal?`${fmtN(r.consumo_dia)}/dia`:'—'
+    const monthTxt=r.consumo_mensal!=null?fmtN(r.consumo_mensal):'—'
+    const pp=temReal&&lt!=='—'?Math.round(r.est_min+(r.consumo_dia*lt)):null
+    return`<tr><td><strong>${r.marca}</strong></td><td>${r.cd}</td><td>${r.insumo}</td>
+      <td>${fmtN(r.est_min)}</td><td>${fmtN(r.alerta_threshold)}</td>
+      <td>${monthTxt}</td><td>${dailyTxt}</td><td>${lt!=='—'?lt+' dias':'—'}</td>
+      <td>${pp!=null?fmtN(pp):'—'}</td></tr>`
+  }).join('')
+}
+
+// ── Forecast ──────────────────────────────────────
+async function loadForecast(){
+  const ano=document.getElementById('fc-filter-ano')?.value||'2026'
+  const mes=document.getElementById('fc-filter-mes')?.value||''
+  let url=`/api/forecast/distribuido?ano=${ano}`
+  if(mes) url+=`&mes=${mes}`
+  try{
+    forecastDist=await(await fetch(url)).json()
+    renderForecastTable()
+  }catch(e){console.error(e)}
+}
+
+async function loadMixCD(){
+  try{
+    mixData=await(await fetch('/api/mix-cd')).json()
+    renderMixTable()
+    updateDistPreview()
+  }catch(e){console.error(e)}
+}
+
+function renderMixTable(){
+  const tbody=document.getElementById('fc-mix-body')
+  if(!mixData.length){tbody.innerHTML='<tr><td colspan="3" class="empty">Sem dados</td></tr>';return}
+  tbody.innerHTML=mixData.map(m=>`
+    <tr>
+      <td><strong>${m.marca}</strong></td>
+      <td>${m.cd}</td>
+      <td><span style="background:#DBEAFE;color:#1E40AF;border-radius:99px;padding:2px 10px;font-size:12px;font-weight:700">${Math.round(m.pct_cd*100)}%</span></td>
+    </tr>`).join('')
+}
+
+function renderForecastTable(){
+  const tbody=document.getElementById('fc-table-body')
+  if(!forecastDist.length){
+    tbody.innerHTML='<tr><td colspan="7" class="empty">Nenhum forecast para o período selecionado</td></tr>'
+    return
+  }
+  tbody.innerHTML=forecastDist.map(f=>{
+    const distHtml=f.distribuicao.map(d=>
+      `<div style="display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid #EEF2FF;font-size:11px">
+        <span style="font-weight:600;color:var(--sub)">${d.cd} <span style="color:var(--dim)">${d.pct_formatado}</span></span>
+        <strong>${fmtN(d.forecast_cd)}</strong>
+      </div>`
+    ).join('')
+    const canalChipH=f.canal==='B2C'?`<span class="c-b2c">B2C</span>`:f.canal==='B2B'?`<span class="c-b2b">B2B</span>`:`<span class="c-mkt">MKT</span>`
+    const updAt=f.updated_at?new Date(f.updated_at+'Z').toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'
+    return`<tr>
+      <td><strong>${f.marca}</strong></td>
+      <td>${canalChipH}</td>
+      <td>${MESES[f.mes]}/${f.ano}</td>
+      <td><strong style="font-size:14px;color:var(--brand)">${fmtN(f.forecast_pedidos)}</strong> <span style="font-size:10px;color:var(--sub)">ped</span></td>
+      <td style="min-width:150px">${distHtml}</td>
+      <td style="font-size:11px;color:var(--sub)">${updAt}</td>
+      <td>
+        <button class="btn-sm" onclick="editForecast(${f.id},${f.ano},${f.mes},'${f.marca}','${f.canal}',${f.forecast_pedidos})">✏️</button>
+        <button class="btn-sm" style="color:var(--red);margin-left:3px" onclick="deleteForecast(${f.id},'${f.marca}',${f.mes})">🗑️</button>
+      </td>
+    </tr>`
+  }).join('')
+}
+
+function updateDistPreview(){
+  const marca=document.getElementById('fc-marca')?.value
+  const pedidos=Number(document.getElementById('fc-pedidos')?.value)
+  const previewDiv=document.getElementById('fc-dist-preview')
+  const rowsDiv=document.getElementById('fc-dist-rows')
+  if(!marca||!pedidos||!mixData.length){previewDiv.style.display='none';return}
+  const mix=mixData.filter(m=>m.marca===marca)
+  if(!mix.length){previewDiv.style.display='none';return}
+  previewDiv.style.display=''
+  rowsDiv.innerHTML=mix.map(m=>{
+    const fc=Math.round(pedidos*m.pct_cd)
+    return`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;border-bottom:1px solid rgba(0,0,0,.05)">
+      <span style="font-weight:700">${m.cd}</span>
+      <span>${Math.round(m.pct_cd*100)}% → <strong style="color:var(--brand)">${fmtN(fc)} pedidos</strong></span>
+    </div>`
+  }).join('')
+}
+
+function editForecast(id,ano,mes,marca,canal,pedidos){
+  document.getElementById('fc-ano').value=ano
+  document.getElementById('fc-mes').value=mes
+  document.getElementById('fc-marca').value=marca
+  document.getElementById('fc-canal').value=canal
+  document.getElementById('fc-pedidos').value=pedidos
+  const msg=document.getElementById('fc-status-msg')
+  msg.textContent='⚠️ Editando registro existente'
+  msg.style.color='var(--yellow)'
+  updateDistPreview()
+  document.getElementById('tab-forecast').scrollIntoView({behavior:'smooth'})
+}
+
+async function saveForecast(){
+  const ano=Number(document.getElementById('fc-ano')?.value)
+  const mes=Number(document.getElementById('fc-mes')?.value)
+  const marca=document.getElementById('fc-marca')?.value
+  const canal=document.getElementById('fc-canal')?.value
+  const pedidos=Number(document.getElementById('fc-pedidos')?.value)
+  if(!marca){alert('Selecione a marca');return}
+  if(!pedidos||pedidos<=0){alert('Informe o forecast de pedidos');return}
+  try{
+    const r=await fetch('/api/forecast',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ano,mes,marca,canal,forecast_pedidos:pedidos})})
+    const d=await r.json()
+    if(d.ok){
+      const msg=document.getElementById('fc-status-msg')
+      msg.textContent=d.action==='updated'?'✅ Atualizado!':'✅ Salvo!'
+      msg.style.color='var(--green)'
+      document.getElementById('fc-pedidos').value=''
+      document.getElementById('fc-dist-preview').style.display='none'
+      await loadForecast()
+      setTimeout(()=>{msg.textContent=''},3000)
+    }else{alert('Erro: '+JSON.stringify(d))}
+  }catch(e){alert('Erro: '+e)}
+}
+
+async function deleteForecast(id,marca,mes){
+  if(!confirm(`Remover forecast de ${marca} para ${MESES[mes]}?`)) return
+  try{
+    await fetch(`/api/forecast/${id}`,{method:'DELETE'})
+    await loadForecast()
+  }catch(e){alert('Erro: '+e)}
+}
+
+// ── Dashboard ─────────────────────────────────────
+function renderDash(){
+  if(!dashData) return
+  const{semana,mes,fillsStatus,lastSnapshot,stats}=dashData
+  document.getElementById('week-badge').textContent=`Semana ${semana} · Mês ${mes}`
+  document.getElementById('s-filled').textContent=stats.filledCount
+  document.getElementById('s-filled-sub').textContent=`de ${stats.totalMarcas} · semana ${semana}`
+  document.getElementById('s-crit').textContent=stats.criticalAlerts
+  document.getElementById('s-action').textContent=stats.pendingAction
+  document.getElementById('s-incons').textContent=stats.entradaAlerts
+  document.getElementById('s-total').textContent=stats.unreadAlerts
+  document.getElementById('fills-meta').textContent=`Sem. ${semana}`
+  const tc=document.getElementById('tab-alert-count')
+  tc.innerHTML=stats.unreadAlerts>0?`<span style="background:#DC2626;color:#fff;border-radius:99px;padding:1px 6px;font-size:10px;margin-left:4px">${stats.unreadAlerts}</span>`:''
+  const sb=document.getElementById('snap-badge')
+  sb.innerHTML=stats.criticalAlerts>0?`<span style="background:#DC2626;color:#fff;border-radius:99px;padding:1px 6px;font-size:10px;margin-left:4px">${stats.criticalAlerts}</span>`:''
+  renderBrands('brand-grid-cur',fillsStatus)
+  renderBrands('brand-grid-27',lastSnapshot.fillsStatus)
+}
+function renderBrands(id,fills){
+  document.getElementById(id).innerHTML=fills.map(f=>{
+    const cls=f.filled?'filled':'missing'
+    const time=f.filled_at?'às '+new Date(f.filled_at+'Z').toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):''
+    return`<div class="bc ${cls}"><div class="bn">${f.marca}</div>
+      <div class="bs"><span class="dot ${f.filled?'g':'r'}"></span>${f.filled?'✓ Preenchido':'✗ Pendente'}</div>
+      ${time?`<div class="bt">${time}</div>`:''}</div>`
+  }).join('')
+}
+function canalChip(c){return c==='B2C'?`<span class="c-b2c">B2C</span>`:c==='B2B'?`<span class="c-b2b">B2B</span>`:`<span class="c-mkt">MKT</span>`}
+// Racional do pool, incluindo a linha do tempo das entregas confirmadas.
+function poolTitle(ins){
+  if(!ins.compartilhado) return ''
+  const p=[]
+  p.push(`${ins.pool_label}`)
+  p.push(`Estoque do pool: ${fmtN(ins.pool_estoque)} (cobertura ${ins.pool_cobertura_dias??'—'} d)`)
+  p.push(`Lead time: ${ins.pool_lead_time} d · consumo no LT: ${fmtN(ins.pool_consumo_lead_time)}`)
+  p.push(`Estoque mínimo: ${fmtN(ins.pool_estoque_minimo)}`)
+  if(ins.pool_transito){
+    p.push(`Em trânsito: ${fmtN(ins.pool_transito)} · próxima chegada ${ins.pool_data_prevista||'sem data'}`)
+    ;(ins.pool_timeline||[]).forEach(t=>{
+      p.push(`  ${t.data||'imediata'} (${t.dias_ate}d): consome ${fmtN(t.consumo_no_intervalo)} → antes ${fmtN(t.estoque_antes_da_chegada)} + ${fmtN(t.entrada)} = ${fmtN(t.estoque_apos_chegada)}`)
+    })
+    p.push(`Estoque projetado após chegada: ${fmtN(ins.pool_estoque_pos_chegada)} (cobertura ${ins.pool_cobertura_pos_chegada??'—'} d)`)
+    if(ins.pool_ruptura_antes_da_chegada) p.push('⚠ Ruptura projetada ANTES da chegada')
+  }
+  return p.join('\n')
+}
+
+function cellHtml(ins){
+  const v=fmtN(ins.current)
+  const tt=poolTitle(ins)
+  const tr=ins.pool_transito?`<span title="${tt.replace(/"/g,'&quot;')}" style="font-size:9px;color:var(--sub);margin-left:3px">🚚${fmtN(ins.pool_transito)}</span>`:''
+  if(tt&&ins.status!=='NA'){
+    const ic=ins.status==='CRITICAL'?'🔴':ins.status==='WARNING'?'🟡':''
+    const cl=ins.status==='CRITICAL'?'crit':ins.status==='WARNING'?'warn':'ok'
+    return`<span class="${cl}" title="${tt.replace(/"/g,'&quot;')}">${ic} ${v}</span>${tr}`
+  }
+  if(ins.status==='NA') return ins.current>0?`<span style="color:var(--text)">${v}</span>`:`<span class="na-cell">—</span>`
+  if(ins.status==='CRITICAL') return`<span class="crit">🔴 ${v}</span>`
+  if(ins.status==='WARNING')  return`<span class="warn">🟡 ${v}</span>`
+  return`<span class="ok">${v}</span>`
+}
+function covHtml(ins){
+  if(ins.cobertura_dias==null) return`<span class="na-cell">—</span>`
+  const d=ins.cobertura_dias;const lt=ins.lead_time||8
+  const cls=d>lt*2?'cf-ok':d>lt?'cf-warn':'cf-crit'
+  const chipCls=d>lt*2?'chip-ok':d>lt?'chip-warn':'chip-crit'
+  const pct=Math.min(Math.round((d/(lt*3))*100),100)
+  return`<div class="cov-wrap"><div class="cov-bar"><div class="cov-fill ${cls}" style="width:${pct}%"></div></div><span class="chip ${chipCls}">${d}d</span></div>`
+}
+function rupturaHtml(ins){
+  if(!ins.ruptura_data) return`<span class="na-cell">—</span>`
+  const d=ins.ruptura_em_dias;const lt=ins.lead_time||8
+  const cls=d<lt?'crit':d<lt*2?'warn':'ok'
+  const[y,m,day]=ins.ruptura_data.split('-')
+  return`<span class="${cls}">${day}/${m}</span>`
+}
+function sugestaoHtml(ins){
+  if(!ins.sugestao_pedido||ins.sugestao_pedido<=0) return`<span class="na-cell">—</span>`
+  return`<strong style="color:var(--brand)">${fmtN(ins.sugestao_pedido)}</strong>`
+}
+
+function renderSnapshot(){
+  if(!snapData.length){loadSnapshot();return}
+  const fcd=document.getElementById('snap-f-cd').value
+  const fc=document.getElementById('snap-f-canal').value
+  const fm=document.getElementById('snap-f-marca').value
+  const fi=document.getElementById('snap-f-insumo')?.value||''
+  let rows=snapData.filter(r=>(fcd?r.cd===fcd:true)&&(fc?r.canal===fc:true)&&(fm?r.marca===fm:true))
+  const visFL=fi?SNAP_INS.filter(x=>x.field===fi):SNAP_INS
+  const thead=document.querySelector('#tab-snapshot .wrap table thead tr')
+  if(thead) thead.innerHTML='<th>Marca</th><th>CD</th><th>Canal</th><th>Sem.</th>'+visFL.map(x=>`<th>${x.th}</th>`).join('')+'<th>Status</th>'
+  const cols=4+visFL.length+1
+  document.getElementById('snap-body').innerHTML=rows.map(r=>{
+    const cells=visFL.map(({field})=>{const ins=r.insumoStatus?.find(i=>i.field===field)||{status:'NA',current:0};return`<td>${cellHtml(ins)}</td>`}).join('')
+    const critN=r.critCount||0;const warnN=r.warnCount||0
+    const statusChip=critN>0?`<span class="chip chip-crit">⚠ ${critN} crítico${critN>1?'s':''}</span>`:warnN>0?`<span class="chip chip-warn">⚡ ${warnN}</span>`:`<span class="chip chip-ok">✓ OK</span>`
+    return`<tr><td><strong>${r.marca}</strong></td><td>${r.cd}</td><td>${canalChip(r.canal)}</td><td>${r.semana}</td>${cells}<td>${statusChip}</td></tr>`
+  }).join('')||`<tr><td colspan="${cols}" class="empty">Nenhum dado</td></tr>`
+  renderCritSnap()
+  renderCDView()
+}
+
+function renderCDView(){
+  if(!snapData.length) return
+  const fcd=document.getElementById('snap-f-cd')?.value||''
+  const fc=document.getElementById('snap-f-canal')?.value||''
+  const fi=document.getElementById('snap-f-insumo')?.value||''
+  const visFL=fi?SNAP_INS.filter(x=>x.field===fi):SNAP_INS
+  const filtered=snapData.filter(r=>(fcd?r.cd===fcd:true)&&(fc?r.canal===fc:true)&&r.canal!=='MARKETPLACE')
+  const groups={}
+  for(const row of filtered){
+    const k=row.cd
+    if(!groups[k]) groups[k]={cd:row.cd,canais:new Set(),rows:[]}
+    groups[k].canais.add(row.canal);groups[k].rows.push(row)
+  }
+  const result=Object.values(groups).sort((a,b)=>a.cd.localeCompare(b.cd)).map(g=>{
+    const insumos=visFL.map(({field,label,th})=>{
+      // Insumo compartilhado: estoque, mínimo e Status vêm do(s) pool(s) do CD.
+      const pools=poolPor(label,g.cd)
+      if(pools.length){
+        const totalStock=pools.reduce((s,p)=>s+(p.estoque_pool||0),0)
+        const totalMin=pools.reduce((s,p)=>s+(p.estoque_minimo||0),0)
+        const consLT=pools.reduce((s,p)=>s+(p.consumo_lead_time||0),0)
+        const transito=pools.reduce((s,p)=>s+(p.estoque_transito||0),0)
+        // Vários pools no mesmo CD (Fita compartilhada + RITUÁRIA): pior status.
+        const ordem={CRITICO:0,ALERTA:1,OK:2,SEM_ESTOQUE:3}
+        const pior=pools.slice().sort((a,b)=>ordem[a.status]-ordem[b.status])[0]
+        const cd0=pools.reduce((s,p)=>s+(p.consumo_dia||0),0)
+        return{field,label,th,totalStock,totalMin,consLT,transito,
+          status:pior.status,cobertura:cd0>0?Math.round(totalStock/cd0):null,
+          lt:pools[0].lead_time,pools}
+      }
+      // Não compartilhado (envelopes): mantém o comportamento anterior.
+      const totalStock=g.rows.reduce((s,r)=>{const ins=r.insumoStatus?.find(i=>i.field===field);return s+(ins?.current||0)},0)
+      const totalMin=g.rows.reduce((s,r)=>{const ins=r.insumoStatus?.find(i=>i.field===field);return s+(ins?.est_min||0)},0)
+      const consumoDia=totalMin>0?totalMin/30.4:0
+      return{field,label,th,totalStock,totalMin,consLT:null,transito:0,
+        status:totalMin===0?'SEM_ESTOQUE':'OK',
+        cobertura:consumoDia>0?Math.round(totalStock/consumoDia):null,lt:LEAD[label]||8,pools:[]}
+    })
+    const critN=insumos.filter(i=>i.status==='CRITICO').length
+    const warnN=insumos.filter(i=>i.status==='ALERTA').length
+    return{cd:g.cd,canaisList:[...g.canais].sort().join(' · '),insumos,critN,warnN}
+  })
+  const thead=document.querySelector('#cd-view-table thead tr')
+  if(thead) thead.innerHTML='<th>CD</th><th>Canais</th>'+visFL.map(x=>`<th>${x.th}</th>`).join('')+'<th>Status</th>'
+  const cols=2+visFL.length+1
+  const MESN=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
+  const pr=poolsAtual[0]?.periodo_forecast
+  const nota=document.getElementById('cd-view-nota')
+  if(nota) nota.textContent=pr
+    ? `Cobertura atual = estoque físico ÷ consumo diário projetado do Forecast de ${MESN[pr.mes]}/${pr.ano}. Estoque em trânsito não entra na cobertura atual — ele é considerado na projeção pós-chegada e no Status.`
+    : ''
+  const tbody=document.getElementById('cd-view-body')
+  if(!result.length){tbody.innerHTML=`<tr><td colspan="${cols}" class="empty">Nenhum dado</td></tr>`;return}
+  tbody.innerHTML=result.map(g=>{
+    const cells=g.insumos.map(ins=>{
+      if(ins.status==='SEM_ESTOQUE'&&!ins.totalMin) return`<td><span class="na-cell">—</span></td>`
+      const chipCls=ST2CLS[ins.status]||''
+      const covCls=ins.status==='CRITICO'?'chip-crit':ins.status==='ALERTA'?'chip-warn':'chip-ok'
+      const ic=ins.status==='CRITICO'?'🔴 ':ins.status==='ALERTA'?'🟡 ':''
+      const est=ins.pools.reduce((s,p)=>s+(p.estoque_estimado_hoje??0),0)
+      const cobEst=ins.pools.length&&ins.pools[0].cobertura_estimada_hoje!=null
+        ?Math.round(ins.pools.reduce((s,p)=>s+(p.cobertura_estimada_hoje||0),0)/ins.pools.length):null
+      const tt=ins.consLT!=null?`Consumo no lead time (${ins.lt}d): ${fmtN(ins.consLT)} · mínimo ${fmtN(ins.totalMin)}${ins.transito?` · em trânsito ${fmtN(ins.transito)}`:''}${ins.pools.length?` · estimado hoje ${fmtN(est)} (cobertura ${cobEst??'—'} d)`:''}`:''
+      return`<td title="${tt}"><span class="${chipCls}">${ic}${fmtN(ins.totalStock)}</span><div style="font-size:10px;color:var(--sub);margin-top:2px">mín: ${fmtN(ins.totalMin)}</div>${ins.pools.length?`<div style="font-size:10px;color:var(--sub)">estimado: ${fmtN(ins.pools.reduce((s,p)=>s+(p.estoque_estimado_hoje??0),0))}</div>`:''}${ins.cobertura!=null?`<div style="font-size:10px;margin-top:1px"><span class="chip ${covCls}" style="padding:1px 5px;font-size:9px">${ins.cobertura}d</span></div>`:''}</td>`
+    }).join('')
+    const okN=g.insumos.filter(i=>i.status==='OK').length
+    const statusChip=`${g.critN>0?`<span class="chip chip-crit">⚠ ${g.critN} crítico${g.critN>1?'s':''}</span> `:''}${g.warnN>0?`<span class="chip chip-warn">⚡ ${g.warnN} alerta${g.warnN>1?'s':''}</span> `:''}${g.critN===0&&g.warnN===0?`<span class="chip chip-ok">✓ OK</span>`:`<span class="chip chip-ok">✓ ${okN}</span>`}`
+    return`<tr><td><strong>${g.cd}</strong></td><td style="font-size:11px;color:var(--sub)">${g.canaisList}</td>${cells}<td style="white-space:nowrap">${statusChip}</td></tr>`
+  }).join('')
+}
+
+function renderCritSnap(){
+  if(!poolsAtual.length) return
+  const fcd=document.getElementById('snap-f-cd')?.value||''
+  const fi=document.getElementById('snap-f-insumo')?.value||''
+  const filterLabel=fi?SNAP_INS.find(x=>x.field===fi)?.label:null
+  // Ação imediata opera no nível do POOL FÍSICO — nunca por marca.
+  // Um pool em ALERTA ou OK não entra nesta lista.
+  const ordem={CRITICO:0,ALERTA:1}
+  const itens=poolsAtual
+    .filter(p=>(!fcd||p.cd===fcd)&&(!filterLabel||p.insumo===filterLabel))
+    .filter(p=>p.status==='CRITICO'||p.status==='ALERTA')
+    .sort((a,b)=>(ordem[a.status]-ordem[b.status])||((a.cobertura_dias??9999)-(b.cobertura_dias??9999)))
+  const nCrit=itens.filter(p=>p.status==='CRITICO').length
+  const nAlert=itens.filter(p=>p.status==='ALERTA').length
+  document.getElementById('crit-snap-count').textContent=`${nCrit} crítico(s) · ${nAlert} alerta(s) — por pool físico`
+  const tbody=document.getElementById('crit-snap-body')
+  if(!itens.length){tbody.innerHTML='<tr><td colspan="12" class="empty" style="padding:20px">✅ Nenhum pool em risco</td></tr>';return}
+  const suppPrinc={},suppEmerg={}
+  if(fornData.length){
+    fornData.filter(f=>f.tipo==='PRINCIPAL').forEach(f=>{if(!suppPrinc[f.insumo]) suppPrinc[f.insumo]=f})
+    fornData.filter(f=>f.tipo==='EMERGÊNCIA').forEach(f=>{if(!suppEmerg[f.insumo]) suppEmerg[f.insumo]=[];suppEmerg[f.insumo].push(f)})
+  }
+  tbody.innerHTML=itens.map(p=>{
+    const sp=suppPrinc[p.insumo]
+    const seList=suppEmerg[p.insumo]||[]
+    const emergHtml=seList.length?seList.map(s=>`<span style="color:#DC2626;font-weight:600">${s.nome}</span> <span style="color:var(--sub)">${s.contato}</span>`).join('<br>'):'—'
+    const st=p.status==='CRITICO'?'<span class="chip chip-crit">🔴 CRÍTICO</span>':'<span class="chip chip-warn">🟡 ALERTA</span>'
+    const covCls=p.status==='CRITICO'?'chip-crit':'chip-warn'
+    const trHtml=p.estoque_transito
+      ? `<strong>${fmtN(p.estoque_transito)}</strong><div style="font-size:10px;color:var(--sub)">chega ${p.data_prevista||'sem data'}${p.ruptura_antes_da_chegada?' · ⚠ rompe antes':''}</div><div style="font-size:10px;color:var(--sub)">após: ${fmtN(p.estoque_pos_chegada)}</div>`
+      : '—'
+    return`<tr>
+      <td><strong>${p.label}</strong><div style="font-size:10px;color:var(--sub)">${p.marcas.join(' + ')}</div></td>
+      <td>${p.cd}</td><td>${st}</td>
+      <td>${p.insumo}</td>
+      <td><strong>${fmtN(p.estoque_pool)}</strong><div>${confiancaBadge(p)}</div></td>
+      <td>${fmtN(p.estoque_minimo)}</td>
+      <td>${p.cobertura_dias!=null?`<span class="chip ${covCls}">${Math.round(p.cobertura_dias)}d</span>`:'—'}</td>
+      <td>${fmtN(p.consumo_lead_time)}</td>
+      <td>${p.lead_time}d</td>
+      <td>${trHtml}</td>
+      <td style="font-size:11px">${sp?`<strong>${sp.nome}</strong><br><span style="color:var(--sub)">${sp.contato}</span>`:'—'}</td>
+      <td style="font-size:11px">${emergHtml}</td>
+    </tr>`
+  }).join('')
+}
+
+function confiancaBadge(l){
+  if(!l||!l.confiabilidade_posicao) return ''
+  const map={ALTA:{ic:'🟢',cor:'#166534',bg:'#F0FDF4',lbl:'Alta'},
+    MEDIA:{ic:'🟡',cor:'#92400E',bg:'#FFFBEB',lbl:'Média'},
+    BAIXA:{ic:'🔴',cor:'#991B1B',bg:'#FEF2F2',lbl:'Baixa'}}
+  const c=map[l.confiabilidade_posicao]||map.MEDIA
+  const partes=[`Confiança da posição: ${c.lbl}`,
+    `Frescor do snapshot: ${l.frescor_snapshot} (${l.consumo_estimado_desde_snapshot!=null?l.pct_consumo_estimado_sobre_snapshot+'% do snapshot é estimativa':'sem base'})`,
+    `Origem da variação: ${l.origem_variacao}`]
+  if(l.revisao_recomendada) partes.push('⚠ Revisar contagem física')
+  const title=partes.join(' · ').replace(/"/g,'&quot;')
+  return `<span title="${title}" style="display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:99px;background:${c.bg};color:${c.cor};margin-top:2px;white-space:nowrap">${c.ic} ${c.lbl}${l.revisao_recomendada?' · revisar':''}</span>`
+}
+function alertRow(a){
+  const lbl=ALERT_LABELS[a.tipo]||a.tipo
+  const time=new Date(a.created_at+'Z').toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})
+  const acionBadge=a.acionado?'<span class="abadge badge-ACIONADO" style="margin-left:4px">✓ Acionado</span>':''
+  const acionBtn=(!a.acionado&&a.tipo==='ESTOQUE_MINIMO')?`<button class="btn-acionar" onclick="acionar(${a.id},this)">Acionar pedido</button>`:''
+  return`<div class="ai${!a.lido?' unread':''}${a.acionado?' acionado':''}">
+    <span class="abadge badge-${a.tipo}">${lbl}</span>${acionBadge}
+    <div class="ac" style="flex:1">
+      <div class="am">${a.marca||''}${a.cd&&a.cd!=='-'?' · '+a.cd:''}${a.canal?' · '+a.canal:''}${a.insumo?' — '+a.insumo:''}</div>
+      <div class="amsg">${a.mensagem}</div>
+      <div class="at">${time}</div>
+    </div>
+    ${acionBtn}
+  </div>`
+}
+function renderAlertMini(){const el=document.getElementById('alert-mini');el.innerHTML=alertsData.slice(0,8).map(alertRow).join('')||'<div class="empty">Nenhum alerta</div>'}
+function renderAlertFull(){const el=document.getElementById('alert-full');el.innerHTML=alertsData.map(alertRow).join('')||'<div class="empty">Nenhum alerta</div>'}
+
+async function editPreco(id,insumo,valorAtual,unidade){
+  const cell=document.getElementById(`preco-${id}`)
+  if(!cell) return
+  cell.innerHTML=`<input id="inp-preco-${id}" type="number" step="0.01" value="${valorAtual}" style="width:80px;padding:3px 6px;border:1px solid var(--blue);border-radius:4px;font-size:12px">
+    <button onclick="savePreco(${id},'${insumo}','${unidade}')" style="background:var(--green);color:#fff;border:none;padding:3px 8px;border-radius:4px;font-size:11px;cursor:pointer;margin-left:3px">✓</button>
+    <button onclick="cancelPreco(${id},'${valorAtual}')" style="background:var(--bg);border:1px solid var(--border);padding:3px 8px;border-radius:4px;font-size:11px;cursor:pointer">✕</button>`
+  document.getElementById(`inp-preco-${id}`)?.focus()
+}
+async function savePreco(id,insumo,unidade){
+  const input=document.getElementById(`inp-preco-${id}`)
+  if(!input) return
+  const novoValor=parseFloat(input.value)
+  if(isNaN(novoValor)||novoValor<=0){alert('Valor inválido');return}
+  try{
+    const r=await fetch(`/api/fornecedores/${id}/preco`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({valor_un:novoValor})})
+    const d=await r.json()
+    if(d.ok){
+      const cell=document.getElementById(`preco-${id}`)
+      if(cell) cell.innerHTML=`<strong>R$ ${novoValor.toFixed(2)}</strong> <span style="color:var(--dim);font-size:10px">✏️</span>`
+      cell.onclick=()=>editPreco(id,insumo,novoValor,unidade)
+      const f=fornData.find(x=>x.id===id);if(f) f.valor_un=novoValor
+    }
+  }catch(e){alert('Erro ao salvar: '+e)}
+}
+function cancelPreco(id,valorAtual){
+  const cell=document.getElementById(`preco-${id}`)
+  if(cell) cell.innerHTML=`<strong>R$ ${Number(valorAtual).toFixed(2)}</strong> <span style="color:var(--dim);font-size:10px">✏️</span>`
+}
+async function acionar(id,btn){
+  btn.textContent='...';btn.disabled=true
+  try{await fetch(`/api/alertas/${id}/acionar`,{method:'POST'});await loadAlerts()}
+  catch(e){btn.textContent='Acionar pedido';btn.disabled=false}
+}
+
+function renderSLA(){
+  const tbody=document.getElementById('sla-body')
+  tbody.innerHTML=slaData.map(r=>{
+    const taxa=r.taxa_fill||0;const barColor=taxa>=90?'#16A34A':taxa>=70?'#D97706':'#DC2626'
+    const sem_atr=r.semanas_atras>0?`<span class="chip chip-crit">${r.semanas_atras} sem. atrás</span>`:'<span class="chip chip-ok">✓ Em dia</span>'
+    return`<tr>
+      <td><strong>${r.marca}</strong></td>
+      <td><div class="sla-bar"><div class="sla-fill" style="width:${taxa}%;background:${barColor}"></div></div>${taxa}%</td>
+      <td>${r.total_fills} / ${r.semanas_possiveis}</td>
+      <td>${r.semanas_faltou>0?`<span class="chip chip-warn">${r.semanas_faltou}</span>`:'<span class="chip chip-ok">0</span>'}</td>
+      <td>${r.ultimo_fill?new Date(r.ultimo_fill+'Z').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):'—'}</td>
+      <td>${sem_atr}</td>
+    </tr>`
+  }).join('')||'<tr><td colspan="6" class="empty">Carregando...</td></tr>'
+}
+function renderTrend(){
+  const tbody=document.getElementById('trend-body')
+  const allRows=[]
+  for(const g of trendData){for(const t of g.trend){if(t.previous===0&&t.current===0) continue;allRows.push({marca:g.marca,cd:g.cd,...t})}}
+  allRows.sort((a,b)=>Math.abs(b.pct_change||0)-Math.abs(a.pct_change||0))
+  tbody.innerHTML=allRows.slice(0,20).map(r=>{
+    const dir=r.dir==='up'?`<span class="trend-up">↑ +${r.pct_change}%</span>`:r.dir==='down'?`<span class="trend-down">↓ ${r.pct_change}%</span>`:`<span class="trend-flat">→ 0%</span>`
+    return`<tr><td><strong>${r.marca}</strong></td><td>${r.cd}</td><td>${r.label}</td><td>${fmtN(r.previous)}</td><td>${fmtN(r.current)}</td><td>${dir} (${fmtN(r.delta)})</td></tr>`
+  }).join('')||'<tr><td colspan="6" class="empty">Sem dados</td></tr>'
+}
+function renderHistorico(){
+  const cdF=document.getElementById('hist-f-cd')?.value||''
+  const canalF=document.getElementById('hist-f-canal')?.value||''
+  let rows=histData.filter(r=>(cdF?r.cd===cdF:true)&&(canalF?r.canal===canalF:true))
+  const byKey={}
+  for(const r of histData) byKey[`${r.marca}|${r.cd}|${r.canal}|${r.semana}`]=r
+  const entradas=[]
+  for(const r of rows){
+    const prevKey=Object.keys(byKey).filter(k=>{const[m,cd,cn,s]=k.split('|');return m===r.marca&&cd===r.cd&&cn===r.canal&&Number(s)<r.semana}).sort().pop()
+    const prev=prevKey?byKey[prevKey]:null
+    if(prev) for(const[f,l] of Object.entries(INS_FIELDS)){const c=Number(r[f]||0),p=Number(prev[f]||0);if(c>p&&p>0) entradas.push({semana:r.semana,marca:r.marca,cd:r.cd,canal:r.canal,insumo:l,prev:p,cur:c,delta:c-p})}
+  }
+  const entSet=new Set(entradas.map(e=>`${e.semana}|${e.marca}|${e.cd}|${e.canal}|${e.insumo}`))
+  document.getElementById('hist-body').innerHTML=rows.map(r=>{
+    function ch(f,l){const v=Number(r[f]||0);const en=entSet.has(`${r.semana}|${r.marca}|${r.cd}|${r.canal}|${l}`);const s=en?'background:#FEF9C3;color:#78350F;font-weight:700;border-radius:3px;padding:2px 4px':'';return`<td><span style="${s}">${fmtN(v)}${en?' ↑':''}</span></td>`}
+    return`<tr><td><strong>${r.semana}</strong></td><td><strong>${r.marca}</strong></td><td>${r.cd}</td><td>${canalChip(r.canal)}</td>${ch('caixa_pp','Caixa PP')}${ch('caixa_p','Caixa P')}${ch('caixa_m','Caixa M')}${ch('caixa_g','Caixa G')}${ch('caixa_gg','Caixa GG')}${ch('envelope_p','Envelope P')}${ch('envelope_m','Envelope M')}${ch('fita_gomada','Fita Gomada')}${ch('fill_pack','FillPack')}</tr>`
+  }).join('')||'<tr><td colspan="13" class="empty">Nenhum dado</td></tr>'
+  document.getElementById('entrada-count').textContent=`${entradas.length} entrada(s) detectada(s)`
+  document.getElementById('entrada-body').innerHTML=entradas.length?entradas.sort((a,b)=>b.semana-a.semana).map(e=>`<tr style="background:#FFFBEB"><td><strong>${e.semana}</strong></td><td><strong>${e.marca}</strong></td><td>${e.cd}</td><td>${canalChip(e.canal)}</td><td>${e.insumo}</td><td>${fmtN(e.prev)}</td><td><strong>${fmtN(e.cur)}</strong></td><td><span style="background:#FEF9C3;color:#78350F;font-weight:700;padding:2px 8px;border-radius:99px">+${fmtN(e.delta)} ↑</span></td></tr>`).join(''):'<tr><td colspan="8" class="empty" style="padding:20px">Nenhuma entrada detectada</td></tr>'
+}
+function renderFornecedores(){
+  const f=document.getElementById('forn-filter')?.value||''
+  const rows=f?fornData.filter(r=>r.insumo===f):fornData
+  function tipoChip(t){
+    if(t==='PRINCIPAL') return`<span style="background:#DCFCE7;color:#166534;border-radius:99px;padding:2px 8px;font-size:10px;font-weight:700">★ Principal</span>`
+    if(t==='EMERGÊNCIA') return`<span style="background:#FEE2E2;color:#991B1B;border-radius:99px;padding:2px 8px;font-size:10px;font-weight:700">⚡ Emergência</span>`
+    if(t==='SECUNDÁRIO') return`<span style="background:#F1F5F9;color:#64748B;border-radius:99px;padding:2px 8px;font-size:10px;font-weight:700">Secundário</span>`
+    return`<span style="background:#EDE9FE;color:#5B21B6;border-radius:99px;padding:2px 8px;font-size:10px;font-weight:700">${t||'—'}</span>`
+  }
+  document.getElementById('forn-body').innerHTML=rows.map(r=>`<tr>
+    <td>${tipoChip(r.tipo)}</td><td><strong>${r.insumo}</strong></td>
+    <td>${r.nome}</td><td style="font-size:11px;color:var(--sub)">${r.cnpj||'—'}</td>
+    <td>${r.contato||'—'}</td>
+    <td><span id="preco-${r.id}" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px" onclick="editPreco(${r.id},'${r.insumo}',${r.valor_un},'${r.unidade}')">
+      <strong>R$ ${Number(r.valor_un).toFixed(2)}/${r.unidade}</strong><span style="color:var(--dim);font-size:10px">✏️</span>
+    </span>${r.valor_bobina?`<br><span style="font-size:10px;color:var(--sub)">R$ ${Number(r.valor_bobina).toFixed(2)}/bobina</span>`:''}</td>
+    <td>${r.unidade}</td><td>${r.uf}</td><td>${r.canal}</td>
+  </tr>`).join('')||'<tr><td colspan="9" class="empty">Nenhum fornecedor</td></tr>'
+}
+
+function fmtN(n){if(n==null) return'—';return Number(n).toLocaleString('pt-BR')}
+async function readAll(){await fetch('/api/alertas/read-all',{method:'POST'});loadAll()}
+function setWHUrls(){const b=window.location.origin;document.getElementById('wh-submit').textContent='POST '+b+'/api/webhook/submit';document.getElementById('wh-check').textContent='POST '+b+'/api/webhook/check-week'}
+
+let paramsData=null
+let paramsPreviewData=null
+async function loadParams(){
+  try{paramsData=await(await fetch('/api/parametros')).json()}catch(e){console.error(e)}
+  // v72: preview real, vindo do MESMO Forecast usado em Sugestão de
+  // Compra/Planejamento/Est. Mínimo — não mais da tabela consumo_mensal.
+  try{paramsPreviewData=await(await fetch('/api/planejamento/estoque-minimo-preview')).json()}catch(e){paramsPreviewData=null}
+  renderParams()
+}
+function renderParams(){
+  if(!paramsData) return
+  const P={}
+  paramsData.parametros.forEach(p=>P[p.chave]=p.valor)
+  const set=(id,key)=>{const el=document.getElementById(id);if(el) el.value=P[key]??''}
+  set('param-fator_seguranca','fator_seguranca');set('param-alerta_fator','alerta_fator')
+  set('param-meta_reposicao','meta_reposicao');set('param-fita_kg_por_bobina','fita_kg_por_bobina')
+  const fEl=document.getElementById('fator-pct')
+  if(fEl) fEl.textContent=`= ${Math.round((P['fator_seguranca']??0.5)*100)}% de buffer`
+  const ltKeys=['lead_Caixa PP','lead_Caixa P','lead_Caixa M','lead_Caixa G','lead_Caixa GG','lead_Fita Gomada','lead_FillPack']
+  const ltLabels={'lead_Caixa PP':'Caixa PP','lead_Caixa P':'Caixa P','lead_Caixa M':'Caixa M','lead_Caixa G':'Caixa G','lead_Caixa GG':'Caixa GG','lead_Fita Gomada':'Fita Gomada (Cyklop)','lead_FillPack':'FillPack (Unipar/Ranpak)'}
+  document.getElementById('params-lead-body').innerHTML=ltKeys.map(k=>
+    `<tr><td style="padding:7px 0;font-weight:600">${ltLabels[k]||k}</td>
+     <td><input id="param-${k}" type="number" step="0.5" min="1" max="60" value="${P[k]??''}" style="width:80px;padding:5px 8px;border:1px solid var(--border);border-radius:5px;font-size:13px"> dias</td></tr>`
+  ).join('')
+  const fatorSeg=P['fator_seguranca']??0.5;const alertaFator=P['alerta_fator']??1.3
+  const tbodyPrev=document.getElementById('params-preview-body')
+  const itensPrev=paramsPreviewData?.ok?paramsPreviewData.itens:[]
+  if(!itensPrev.length){
+    const motivo=paramsPreviewData&&!paramsPreviewData.ok?paramsPreviewData.error:'Sem Forecast para o mês vigente.'
+    tbodyPrev.innerHTML=`<tr><td colspan="9" class="empty">${motivo}</td></tr>`
+  }else{
+    // v72: consumo/mês e consumo/dia vêm do Forecast vigente (mesma fonte de
+    // Sugestão de Compra/Planejamento/Est. Mínimo). Só est_min/threshold são
+    // recalculados aqui, ao vivo, com os valores do FORMULÁRIO (ainda não
+    // salvos) — é exatamente o propósito da prévia: "se eu salvar isto, o
+    // estoque mínimo vira X". A unidade (bobina/un) vem do próprio insumo.
+    tbodyPrev.innerHTML=itensPrev.map(c=>{
+      const lt=P[`lead_${c.insumo}`]??c.lead_time??8;const dia=c.consumo_dia
+      const est_min=Math.max(1,Math.round(dia*lt*(1+fatorSeg)));const threshold=Math.round(est_min*alertaFator)
+      const isBobina=c.insumo==='Fita Gomada'||c.insumo==='FillPack'
+      return`<tr><td><strong>${c.marca}</strong></td><td>${c.cd}</td>
+        <td>${c.insumo}${isBobina?' <span style="background:#EDE9FE;color:#5B21B6;border-radius:99px;padding:1px 6px;font-size:10px">bobinas</span>':''}</td>
+        <td>${fmtN(c.consumo_mensal)}</td><td style="font-size:11px;color:var(--sub)">${isBobina?'BOBINA':'UN'}</td>
+        <td>${lt}d</td><td><strong>${fmtN(est_min)}</strong></td><td>${fmtN(threshold)}</td>
+        <td>${Math.round(est_min/dia)}d</td></tr>`
+    }).join('')
+  }
+}
+document.addEventListener('input',e=>{
+  if(e.target.id==='param-fator_seguranca'){
+    const el=document.getElementById('fator-pct');if(el) el.textContent=`= ${Math.round(e.target.value*100)}% de buffer`
+  }
+})
+async function saveParams(){
+  const P=paramsData?.parametros||[]
+  const updates=P.map(p=>{const el=document.getElementById(`param-${p.chave}`);return{chave:p.chave,valor:el?Number(el.value):p.valor}})
+  try{
+    const r=await fetch('/api/parametros',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({parametros:updates})})
+    const d=await r.json()
+    if(d.ok){
+      const msg=d.recalculado
+        ?`✅ Parâmetros salvos! ${d.recalculated} estoques mínimos recalculados pelo Forecast de ${d.mes}/${d.ano}${d.ignorados?` (${d.ignorados} ignorados — B2B/Marketplace/sem fator).`:'.'}`
+        :`✅ Parâmetros salvos. ⚠️ Estoque mínimo NÃO recalculado: ${d.motivo}`
+      alert(msg);await loadParams();emData=[];snapData=[]
+    }
+    else alert('Erro: '+JSON.stringify(d))
+  }catch(e){alert('Erro ao salvar: '+e)}
+}
+
+// ── Planejamento ──────────────────────────────────
+let premissas=null
+
+function badge(st){
+  const map={OK:['#DCFCE7','#166534','OK'],
+    MIX_ZERO:['#F1F5F9','#64748B','mix 0%'],
+    FATOR_NAO_DEFINIDO:['#FEE2E2','#991B1B','fator não definido'],
+    MIX_NAO_DEFINIDO:['#FEE2E2','#991B1B','mix não definido'],
+    PENDENTE_ETAPA_MARKETPLACE:['#FEF9C3','#854D0E','etapa Marketplace'],
+    ALERTA_COMPRA:['#FEE2E2','#991B1B','alerta de compra'],
+    CRITICO:['#FEE2E2','#991B1B','🔴 crítico'],
+    ALERTA:['#FEF3C7','#92400E','🟡 alerta'],
+    NAO_UTILIZA:['#F1F5F9','#64748B','não utiliza'],
+    SEM_ESTOQUE:['#F1F5F9','#64748B','sem estoque informado']}
+  const [bg,fg,txt]=map[st]||['#F1F5F9','#64748B',st]
+  return `<span style="background:${bg};color:${fg};border-radius:99px;padding:2px 8px;font-size:10px;font-weight:700">${txt}</span>`
+}
+
+async function loadPremissas(){
+  try{
+    premissas=await(await fetch('/api/premissas')).json()
+    const c=premissas.config
+    document.getElementById('plan-cfg').innerHTML=[
+      ['dias base',c.diasBase.valor,c.diasBase.chave],
+      ['fator segurança',`${Math.round(c.fatorSeg.valor*100)}%`,c.fatorSeg.chave],
+      ['fator alerta',`${c.fatorAlerta.valor}x`,c.fatorAlerta.chave],
+      ['embalagens/pedido',c.embPorPedido.valor,c.embPorPedido.chave],
+      ['meta de estoque',`${c.metaMeses?c.metaMeses.valor:2} meses`,c.metaMeses?c.metaMeses.chave:'meta_reposicao'],
+      ['lead time por insumo','PP 12 · P 7 · M 7 · G 9 · GG 9 · Fita 16 · Fill 7,5','dias'],
+    ].map(([l,v,k])=>`<div style="background:#F8FAFC;border:1px solid var(--border);border-radius:7px;padding:8px 14px">
+      <div style="font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:.4px">${l}</div>
+      <div style="font-size:17px;font-weight:700;color:var(--brand)">${v}</div>
+      <div style="font-size:10px;color:var(--dim)">${k}</div></div>`).join('')
+    const dv=premissas.divergencias||[]
+    document.getElementById('plan-diverg').innerHTML=dv.length
+      ? dv.map(d=>{
+          const bloq=d.severidade==='BLOQUEANTE'
+          const bg=bloq?'#FEF2F2':'#FFFBEB', bd=bloq?'#FECACA':'#FDE68A', fg=bloq?'#991B1B':'#92400E'
+          const ico=bloq?'⛔':(d.severidade==='DECIDIDO'?'✅':'⚠️')
+          return `<div style="background:${bg};border:1px solid ${bd};border-radius:7px;padding:10px 12px;font-size:12px;color:${fg};margin-bottom:6px">
+            ${ico} <strong>${d.parametro}</strong> = ${d.valor_no_hub}
+            ${d.detalhe?`<div style="margin-top:4px">${d.detalhe}</div>`:''}
+            ${d.hipotese?`<div style="margin-top:4px"><em>Hipótese:</em> ${d.hipotese}</div>`:''}
+            <div style="margin-top:4px">${d.impacto}</div></div>`}).join('')
+      : '<div style="font-size:12px;color:var(--green)">✓ Sem divergências entre parâmetros do Hub e os anexos.</div>'
+  }catch(e){console.error(e)}
+}
+
+function itensTable(itens){
+  if(!itens||!itens.length) return '<div class="empty">Nenhum item</div>'
+  return `<div class="wrap"><table>
+    <thead><tr><th>Insumo</th><th>Status</th><th>Forecast CD</th><th>Fator / Mix</th>
+      <th>Fórmula</th><th>Consumo mensal</th><th>Cons./dia</th><th>Estoque atual</th>
+      <th>Cobertura</th><th>Lead time</th><th>Meta (2 meses)</th><th>Compra</th><th>Compra sugerida</th></tr></thead><tbody>
+    ${itens.map(i=>{
+      const cob=i.cobertura_dias
+      const cobCls=cob==null?'':(i.status_alerta==='ALERTA_COMPRA'?'chip-crit':'chip-ok')
+      const compra=i.estoque_compartilhado
+        ? `<span style="font-size:10px;color:var(--sub)">via ${i.pool_label||'pool do CD'}</span>`
+        : (i.status_alerta?badge(i.status_alerta):'—')
+      return `<tr>
+      <td><strong>${i.insumo}</strong></td>
+      <td>${badge(i.status)}</td>
+      <td>${fmtN(i.forecast_cd)}</td>
+      <td>${i.coeficiente!=null?`${i.coeficiente} <span style="color:var(--sub);font-size:10px">${i.unidade_coef||''}</span>`:(i.mix_pct!=null?i.mix_pct_formatado:'—')}</td>
+      <td style="font-size:11px;color:var(--sub)">${i.formula||i.mensagem||'—'}</td>
+      <td>${i.consumo_projetado!=null?`<strong>${fmtN(i.consumo_projetado)}</strong> <span style="font-size:10px;color:var(--sub)">${i.unidade||''}</span>`:'—'}</td>
+      <td>${i.consumo_dia!=null?fmtN(i.consumo_dia):'—'}</td>
+      <td>${i.estoque_compartilhado?'<span style="font-size:10px;color:var(--sub)">compartilhado</span>':(i.estoque_atual!=null?fmtN(i.estoque_atual):'—')}</td>
+      <td>${cob!=null?`<span class="chip ${cobCls}" style="padding:1px 6px;font-size:10px">${Math.round(cob)}d</span>`:'—'}</td>
+      <td>${i.lead_time!=null?i.lead_time+'d':'—'}</td>
+      <td>${i.estoque_alvo!=null?fmtN(i.estoque_alvo):'—'}</td>
+      <td>${compra}</td>
+      <td>${i.compra_sugerida?`<strong style="color:var(--brand)">${fmtN(i.compra_sugerida)}</strong>`:(i.estoque_compartilhado?'—':'0')}</td>
+    </tr>`}).join('')}
+  </tbody></table></div>`
+}
+
+function poolsTable(pools){
+  if(!pools||!pools.length) return ''
+  return `<div class="sec" style="margin-bottom:18px">
+    <div class="sec-head"><h2>🧺 Estoque compartilhado por CD — caixas, FillPack e Fita Gomada</h2>
+      <span style="font-size:11px;color:var(--sub)">Fita da RITUÁRIA é personalizada e nunca entra no pool</span></div>
+    <div class="sec-body"><div class="wrap"><table>
+    <thead><tr><th>Pool</th><th>Insumo</th><th>CD</th><th>Marcas</th><th>Consumo mensal</th>
+      <th>Cons./dia</th><th title="Posição operacional de hoje — mesma base de Cobertura, Status e Compra sugerida nesta linha">Estoque (hoje)</th><th>Cobertura</th><th>Lead time</th>
+      <th>Meta (2 meses)</th><th>Necessidade bruta</th><th>Em trânsito</th><th>Chegada</th>
+      <th>Status</th><th>Compra sugerida</th></tr></thead><tbody>
+    ${pools.map(p=>{
+      const cobCls=p.status==='CRITICO'?'chip-crit':(p.status==='ALERTA'?'chip-warn':'chip-ok')
+      return `<tr>
+        <td><strong>${p.label}</strong>${p.compartilhavel?'':' <span style="background:#EDE9FE;color:#5B21B6;border-radius:99px;padding:1px 6px;font-size:10px">isolado</span>'}</td>
+        <td>${p.insumo}</td><td>${p.cd}</td>
+        <td style="font-size:11px;color:var(--sub)">${p.marcas.join(' + ')}</td>
+        <td><strong>${fmtN(p.consumo_mensal)}</strong> <span style="font-size:10px;color:var(--sub)">${p.unidade==='UN'?'un':'bobinas'}</span></td>
+        <td>${fmtN(p.consumo_dia)}</td>
+        <td>${p.estoque_pool!=null?fmtN(p.estoque_pool):'—'}</td>
+        <td>${p.cobertura_dias!=null?`<span class="chip ${cobCls}" style="padding:1px 6px;font-size:10px">${Math.round(p.cobertura_dias)}d</span>`:'—'}</td>
+        <td>${p.lead_time}d</td>
+        <td>${fmtN(p.estoque_alvo)}</td>
+        <td>${p.estoque_projetado!=null?fmtN(p.estoque_projetado):'—'}</td>
+        <td>${p.estoque_transito?fmtN(p.estoque_transito):'0'}</td>
+        <td style="font-size:11px;color:var(--sub)">${p.data_prevista||'—'}</td>
+        <td>${badge(p.status||p.status_alerta)}</td>
+        <td>${p.compra_sugerida?`<strong style="color:var(--brand)">${fmtN(p.compra_sugerida)}</strong>`:'0'}</td>
+      </tr>`}).join('')}
+    </tbody></table></div>
+    <div style="margin-top:8px;font-size:11px;color:var(--sub)">⚠️ Estoque do pool = soma do que cada marca reportou. Se as marcas reportam o mesmo estoque físico, há dupla contagem — validar antes de comprar.</div>
+    </div></div>`
+}
+
+async function simular(){
+  const marca=document.getElementById('sim-marca').value
+  const cd=document.getElementById('sim-cd').value
+  const canal=document.getElementById('sim-canal').value
+  const ped=document.getElementById('sim-ped').value
+  const out=document.getElementById('sim-out')
+  out.innerHTML='<div class="empty">Calculando...</div>'
+  try{
+    const d=await(await fetch(`/api/planejamento/simular?marca=${encodeURIComponent(marca)}&cd=${cd}&canal=${canal}&pedidos=${ped}`)).json()
+    if(d.bloqueio){
+      out.innerHTML=`<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:7px;padding:12px;font-size:12px;color:#991B1B">
+        🚫 <strong>${d.bloqueio.motivo}</strong> — ${d.bloqueio.mensagem}</div>`
+      return
+    }
+    out.innerHTML=`<div style="font-size:12px;color:var(--sub);margin-bottom:8px">
+      ${d.marca} · ${d.cd} · ${d.canal} · ${fmtN(d.pedidos)} pedidos</div>`+itensTable(d.itens)
+  }catch(e){out.innerHTML='<div class="empty">Erro: '+e+'</div>'}
+}
+
+let planData=null
+
+// Filtros da aba Planejamento — apenas visualização. Não tocam banco,
+// Forecast, fatores, mixes nem recalculam status: filtram linhas já calculadas.
+function matchInsumoPlan(insumo,f){return !f||insumo===f}
+// Itens de marca de insumo compartilhado não têm status próprio — a
+// criticidade é do pool. Ao filtrar por status, o item herda o status do pool.
+function matchStatusPlan(item,f,poolStatus){
+  if(!f) return true
+  // Item com pool: vale o status do pool (criticidade física).
+  if(item.pool&&poolStatus) return poolStatus[item.pool]===f
+  return item.status===f||item.status_alerta===f
+}
+
+async function loadPlan(){
+  const ano=document.getElementById('plan-ano')?.value||'2026'
+  const mes=document.getElementById('plan-mes')?.value||''
+  const out=document.getElementById('plan-out')
+  out.innerHTML='<div class="empty">Carregando...</div>'
+  try{
+    planData=await(await fetch(`/api/planejamento?ano=${ano}&mes=${mes}`)).json()
+    renderPlan()
+  }catch(e){out.innerHTML='<div class="empty">Erro: '+e+'</div>'}
+}
+
+function renderPlan(){
+  const out=document.getElementById('plan-out')
+  const d=planData
+  if(!d) return
+  if(!d.planejamento||!d.planejamento.length){
+    out.innerHTML='<div class="empty">Nenhum Forecast cadastrado para o período. Cadastre na aba 🎯 Forecast.</div>';return
+  }
+  const fi=document.getElementById('plan-insumo')?.value||''
+  const fs=document.getElementById('plan-status')?.value||''
+  const ativo=fi||fs
+  const poolStatus={};(d.pools||[]).forEach(p=>{poolStatus[p.pool]=p.status||p.status_alerta})
+  const pools=(d.pools||[]).filter(p=>matchInsumoPlan(p.insumo,fi)&&matchStatusPlan(p,fs,poolStatus))
+  const grupos=d.planejamento
+    .map(g=>({...g,itens:(g.itens||[]).filter(i=>matchInsumoPlan(i.insumo,fi)&&matchStatusPlan(i,fs,poolStatus))}))
+    .filter(g=>g.bloqueio?!ativo:g.itens.length)
+  const resumo=ativo?`<div style="font-size:11px;color:var(--sub);margin-bottom:10px">
+      Filtro ativo — ${pools.length} pool(s) e ${grupos.reduce((a,g)=>a+g.itens.length,0)} item(ns) por marca.
+      <a href="#" onclick="limparFiltrosPlan();return false" style="color:var(--brand);font-weight:700">limpar filtros</a></div>`:''
+  if(!pools.length&&!grupos.length){
+    out.innerHTML=resumo+'<div class="empty">Nenhum resultado para o filtro selecionado.</div>';return
+  }
+  out.innerHTML=resumo+poolsTable(pools)+grupos.map(g=>`
+      <div style="margin-bottom:18px">
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:2px solid var(--border);margin-bottom:8px">
+          <strong style="font-size:14px;color:var(--brand)">${g.marca} · ${g.cd}</strong>
+          ${canalChip(g.canal)}
+          <span style="font-size:11px;color:var(--sub)">Forecast marca ${fmtN(g.forecast_marca)} × ${g.pct_cd_formatado} = <strong>${fmtN(g.forecast_cd)}</strong> pedidos no CD</span>
+        </div>
+        ${g.bloqueio
+          ? `<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:7px;padding:10px 12px;font-size:12px;color:#991B1B">🚫 <strong>${g.bloqueio.motivo}</strong> — ${g.bloqueio.mensagem}</div>`
+          : itensTable(g.itens)}
+      </div>`).join('')
+}
+
+function limparFiltrosPlan(){
+  const a=document.getElementById('plan-insumo'),b=document.getElementById('plan-status')
+  if(a)a.value='';if(b)b.value=''
+  renderPlan()
+}
+
+async function aplicarEM(){
+  const ano=Number(document.getElementById('plan-ano').value)
+  const mes=Number(document.getElementById('plan-mes').value)
+  if(!confirm(`Gravar estoque mínimo dinâmico de ${mes}/${ano} na tabela estoque_minimo?`)) return
+  try{
+    const r=await fetch('/api/planejamento/aplicar-estoque-minimo',{method:'POST',
+      headers:{'Content-Type':'application/json'},body:JSON.stringify({ano,mes})})
+    const d=await r.json()
+    if(d.ok){alert(`✅ ${d.aplicados_count} linhas de estoque mínimo atualizadas.\n${d.ignorados.length} ignoradas (B2B / sem fator / Marketplace).`);emData=[]}
+    else alert('Erro: '+(d.error||JSON.stringify(d)))
+  }catch(e){alert('Erro: '+e)}
+}
+
+// ── Estoque em trânsito (CRUD) ────────────────────────────────────────────────
+let transitoData=[],trEditId=null,transitoResumo=null
+
+const POOL_OPTS={
+  'FillPack':[['FILLPACK_ES','Pool FillPack ES (AP+BB+KOKESHI+LE)','ES'],
+              ['FILLPACK_RJ','Pool FillPack RJ (AP+BB)','RJ']],
+  'Fita Gomada':[['FITA_ES','Pool Fita compartilhada ES (AP+BB+KOKESHI+LE)','ES'],
+                 ['FITA_RITUARIA_ES','Fita RITUÁRIA (personalizada)','ES'],
+                 ['FITA_RJ','Pool Fita RJ (AP+BB)','RJ']],
+}
+function poolsDoInsumo(insumo,cd){
+  if(POOL_OPTS[insumo]) return POOL_OPTS[insumo].filter(p=>p[2]===cd)
+  const sigla=insumo.replace('Caixa ','')
+  return [[`CAIXA_${sigla}_${cd}`,`Pool ${insumo} · ${cd}`,cd]]
+}
+function trToggleTipo(){
+  const t=document.getElementById('tr-tipo').value==='TRANSFERENCIA_CD'
+  document.getElementById('tr-origem-wrap').style.display=t?'':'none'
+  document.getElementById('tr-saida-wrap').style.display=t?'':'none'
+  document.getElementById('tr-cd-label').textContent=t?'CD destino':'CD'
+}
+
+function trSyncPools(){
+  const insumo=document.getElementById('tr-insumo').value
+  const cd=document.getElementById('tr-cd').value
+  const sel=document.getElementById('tr-pool')
+  sel.innerHTML=poolsDoInsumo(insumo,cd).map(p=>`<option value="${p[0]}">${p[1]}</option>`).join('')
+  document.getElementById('tr-un').value=insumo.startsWith('Caixa')?'UN':'BOBINA'
+}
+
+async function loadTransito(){
+  const out=document.getElementById('tr-out')
+  out.innerHTML='<div class="empty">Carregando...</div>'
+  trSyncPools()
+  try{
+    const d=await(await fetch('/api/transito')).json()
+    transitoData=d.transito||[]
+    transitoResumo=d.resumo||null
+    renderTransito()
+  }catch(e){out.innerHTML='<div class="empty">Erro: '+e+'</div>'}
+}
+
+function stTransito(st,venc){
+  const map={EM_TRANSITO:['#DBEAFE','#1E40AF','EM TRÂNSITO'],
+    PREVISAO_VENCIDA:['#FEE2E2','#991B1B','PREVISÃO VENCIDA'],
+    RECEBIDO:['#DCFCE7','#166534','RECEBIDO']}
+  const[bg,fg,txt]=map[st]||['#F1F5F9','#64748B',st]
+  return `<span style="background:${bg};color:${fg};border-radius:99px;padding:2px 8px;font-size:10px;font-weight:700;white-space:nowrap">${txt}</span>`
+    +(venc?`<div style="font-size:10px;color:#B45309;font-weight:700;margin-top:2px">⚠ previsão vencida</div>`:'')
+}
+
+function renderTransito(){
+  const out=document.getElementById('tr-out')
+  const f=document.getElementById('tr-filtro')?.value||''
+  const res=document.getElementById('tr-resumo')
+  if(res&&transitoResumo) res.textContent=
+    `${transitoResumo.EM_TRANSITO} em trânsito · ${transitoResumo.PREVISAO_VENCIDA} com previsão vencida · ${transitoResumo.RECEBIDO} recebidos`
+    +(transitoResumo.previsao_vencida_nao_confirmada?` · ⚠ ${transitoResumo.previsao_vencida_nao_confirmada} vencida(s) ainda não confirmada(s)`:'')
+  const linhas=transitoData.filter(t=>!f||t.status===f)
+  if(!linhas.length){out.innerHTML='<div class="empty">Nenhum registro para o filtro.</div>';return}
+  const opts=t=>['EM_TRANSITO','PREVISAO_VENCIDA','RECEBIDO']
+    .map(x=>`<option value="${x}" ${t.status===x?'selected':''}>${x}</option>`).join('')
+  out.innerHTML=`<div class="wrap"><table>
+    <thead><tr><th>Tipo</th><th>Pedido / OC</th><th>CD</th><th>Marca / Pool</th><th>Canal</th><th>Insumo</th>
+      <th>Quantidade</th><th>Un.</th><th>Data prevista</th><th>Status</th>
+      <th>Recebimento real</th><th>Observação</th><th>Ações</th></tr></thead><tbody>
+    ${linhas.map(t=>`<tr>
+      <td>${t.tipo_movimentacao==='TRANSFERENCIA_CD'
+        ?`<span style="background:#EDE9FE;color:#5B21B6;border-radius:99px;padding:2px 8px;font-size:10px;font-weight:700">TRANSFERÊNCIA</span>
+           <div style="font-size:10px;color:var(--sub);margin-top:2px">${t.cd_origem||'?'} → ${t.cd}</div>
+           ${t.data_saida?`<div style="font-size:10px;color:var(--sub)">saída ${dataBR(t.data_saida)}</div>`
+             :`<div style="font-size:10px;color:#B45309;font-weight:700">⚠ DATA DE SAÍDA PENDENTE
+                <button class="btn-acionar" style="font-size:9px;padding:1px 5px" onclick="informarDataSaida(${t.id})">informar</button></div>`}`
+        :`<span style="font-size:10px;color:var(--sub)">compra</span>`}
+        ${t.apuracao?`<div style="font-size:10px;color:#B45309;font-weight:700;margin-top:2px" title="${t.apuracao}">⚠ ${t.apuracao.split(':')[0]}</div>`:''}</td>
+      <td style="font-size:11px">${t.pedido_oc||'—'}</td>
+      <td><strong>${t.cd}</strong></td>
+      <td style="font-size:11px">${t.pool||t.marca||'—'}</td>
+      <td>${canalChip(t.canal)}</td>
+      <td>${t.insumo}</td>
+      <td><strong>${fmtN(t.quantidade)}</strong>${t.quantidade_recebida!=null&&t.quantidade_recebida!==t.quantidade?`<div style="font-size:10px;color:#B45309">recebido ${fmtN(t.quantidade_recebida)} · pendente ${fmtN(t.quantidade-t.quantidade_recebida)}</div>`:''}</td>
+      <td style="font-size:11px;color:var(--sub)">${t.unidade||''}</td>
+      <td>${t.data_prevista||'—'}${t.dias_atraso?`<div style="font-size:10px;color:#991B1B">${t.dias_atraso}d de atraso</div>`:''}</td>
+      <td>${stTransito(t.status,t.previsao_vencida)}</td>
+      <td style="font-size:11px">${t.data_recebimento_real||'—'}</td>
+      <td style="font-size:11px;color:var(--sub)">${t.observacao||''}</td>
+      <td style="white-space:nowrap">
+        <select onchange="alterarStatusTransito(${t.id},this.value)" style="font-size:10px;padding:2px 4px;border:1px solid var(--border);border-radius:4px">${opts(t)}</select>
+        <button class="btn-acionar" onclick="editarTransito(${t.id})">Editar</button>
+        <button class="btn-acionar" onclick="removerTransito(${t.id})">Remover</button>
+      </td></tr>`).join('')}
+  </tbody></table></div>`
+}
+
+// Troca manual de status. Ao salvar, TODAS as visões são recarregadas —
+// sem deploy, é operação de usuário.
+// Preenchimento manual da data de saída de uma transferência já baixada.
+async function informarDataSaida(id){
+  const t=transitoData.find(x=>x.id===id);if(!t) return
+  const d=prompt('Data real de saída da origem (AAAA-MM-DD):',t.data_prevista||'')
+  if(!d) return
+  try{
+    const r=await fetch(`/api/transito/${id}/movimentacao`,{method:'PATCH',
+      headers:{'Content-Type':'application/json'},body:JSON.stringify({data_saida:d})})
+    const j=await r.json()
+    if(!j.ok){alert('Erro: '+(j.error||JSON.stringify(j)));return}
+    await loadTransito();await loadCompra();poolsAtual=[];snapData=[];await loadSnapshot()
+  }catch(e){alert('Erro: '+e)}
+}
+
+async function alterarStatusTransito(id,novo){
+  const t=transitoData.find(x=>x.id===id)
+  if(!t||t.status===novo) return
+  const body={status:novo}
+  if(novo==='RECEBIDO'){
+    const hoje=new Date().toISOString().slice(0,10)
+    const d=prompt(`Data real do recebimento (AAAA-MM-DD):`,t.data_prevista||hoje)
+    if(d===null) return renderTransito()
+    body.data_recebimento_real=d
+    const q=prompt(`Quantidade recebida (pedido: ${t.quantidade} ${t.unidade}).\nDeixe como está para recebimento integral.`,String(t.quantidade))
+    if(q===null) return renderTransito()
+    body.quantidade_recebida=Number(q)
+  }
+  try{
+    const r=await fetch(`/api/transito/${id}/status`,{method:'PATCH',
+      headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    const d=await r.json()
+    if(!d.ok){alert('Erro: '+(d.error||JSON.stringify(d)));return renderTransito()}
+    if(d.aviso) alert(d.aviso)
+    await loadTransito()
+    await loadCompra()
+    poolsAtual=[];snapData=[]
+    await loadSnapshot()
+  }catch(e){alert('Erro: '+e)}
+}
+
+function editarTransito(id){
+  const t=transitoData.find(x=>x.id===id);if(!t) return
+  trEditId=id
+  document.getElementById('tr-cd').value=t.cd
+  document.getElementById('tr-insumo').value=t.insumo
+  trSyncPools()
+  if(t.pool) document.getElementById('tr-pool').value=t.pool
+  document.getElementById('tr-canal').value=t.canal||'B2C'
+  document.getElementById('tr-qtd').value=t.quantidade
+  document.getElementById('tr-un').value=t.unidade||'UN'
+  document.getElementById('tr-data').value=t.data_prevista||''
+  document.getElementById('tr-obs').value=t.observacao||''
+  document.getElementById('tr-save').textContent='Salvar alteração'
+  document.getElementById('tr-cancel').style.display=''
+}
+
+function cancelarEdicaoTransito(){
+  trEditId=null
+  document.getElementById('tr-qtd').value=''
+  document.getElementById('tr-data').value=''
+  document.getElementById('tr-obs').value=''
+  document.getElementById('tr-save').textContent='Adicionar'
+  document.getElementById('tr-cancel').style.display='none'
+}
+
+// Salvar sempre recarrega a Sugestão de Compra: o trânsito abate a compra.
+async function salvarTransito(){
+  const body={
+    cd:document.getElementById('tr-cd').value,
+    pool:document.getElementById('tr-pool').value,
+    canal:document.getElementById('tr-canal').value,
+    insumo:document.getElementById('tr-insumo').value,
+    quantidade:Number(document.getElementById('tr-qtd').value),
+    unidade:document.getElementById('tr-un').value,
+    data_prevista:document.getElementById('tr-data').value||null,
+    observacao:document.getElementById('tr-obs').value||null,
+  }
+  if(isNaN(body.quantidade)||body.quantidade<0){alert('Informe uma quantidade válida.');return}
+  const tipo=document.getElementById('tr-tipo')?.value||'COMPRA_FORNECEDOR'
+  if(tipo==='TRANSFERENCIA_CD'&&!trEditId){
+    const cdOrigem=document.getElementById('tr-origem').value
+    const dataSaida=document.getElementById('tr-saida').value
+    if(!dataSaida){alert('Transferência exige a data de saída — é ela que baixa o estoque da origem.');return}
+    if(cdOrigem===body.cd){alert('Origem e destino não podem ser o mesmo CD.');return}
+    try{
+      const r=await fetch('/api/transferencias',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({cd_origem:cdOrigem,cd_destino:body.cd,insumo:body.insumo,
+          quantidade:body.quantidade,unidade:body.unidade,data_saida:dataSaida,
+          previsao_chegada:body.data_prevista,observacao:body.observacao,canal:body.canal})})
+      const d=await r.json()
+      if(!d.ok){alert('Erro: '+(d.error||JSON.stringify(d)));return}
+      cancelarEdicaoTransito()
+      await loadTransito();await loadCompra();poolsAtual=[];snapData=[];await loadSnapshot()
+    }catch(e){alert('Erro: '+e)}
+    return
+  }
+  try{
+    const url=trEditId?`/api/transito/${trEditId}`:'/api/transito'
+    const r=await fetch(url,{method:trEditId?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    const d=await r.json()
+    if(!d.ok){alert('Erro: '+(d.error||JSON.stringify(d)));return}
+    cancelarEdicaoTransito()
+    await loadTransito()
+    await loadCompra()
+  }catch(e){alert('Erro: '+e)}
+}
+
+async function removerTransito(id){
+  if(!confirm('Remover este registro de estoque em trânsito?')) return
+  try{
+    await fetch(`/api/transito/${id}`,{method:'DELETE'})
+    await loadTransito()
+    await loadCompra()
+  }catch(e){alert('Erro: '+e)}
+}
+
+// ── Sugestão de Compra ────────────────────────────────────────────────────────
+let compraData=null
+const dataBR=d=>{if(!d)return '—';const[a,m,x]=String(d).slice(0,10).split('-');return `${x}/${m}`}
+const diasDesde=d=>{if(!d)return 0;const a=new Date(String(d).slice(0,10)+'T00:00:00Z'),b=new Date(new Date().toISOString().slice(0,10)+'T00:00:00Z');return Math.max(0,Math.round((b-a)/86400000))}
+const brl=n=>(n==null?'—':Number(n).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}))
+
+// Data-limite para EMITIR o pedido. Distinta da prioridade de entrega,
+// que responde o que precisa CHEGAR primeiro.
+function pedidoCell(l){
+  if(l.status_pedido==='SEM_RUPTURA_NO_HORIZONTE')
+    return `<div style="font-size:11px;color:var(--sub)" title="${l.motivo_pedido||''}">sem ruptura no horizonte</div>`
+  if(!l.data_limite_pedido) return '<span style="color:var(--sub)">—</span>'
+  const tt=(l.motivo_pedido||'')+(l.alerta_projecao?' · '+l.alerta_projecao:'')
+  const pend=l.projecao_confiavel===false
+    ?`<div style="font-size:9px;color:#B45309;font-weight:700" title="${l.alerta_projecao||''}">⚠ projeção com pendência</div>`:''
+  if(l.status_pedido==='ATRASADO')
+    return `<div title="${tt}"><div style="font-size:12px;font-weight:800;color:#991B1B">🔴 PEDIDO ATRASADO</div>
+      <div style="font-size:11px">era até ${dataBR(l.data_limite_pedido)}</div>
+      <div style="font-size:10px;color:#991B1B;font-weight:700">${l.dias_atraso_pedido}d de atraso</div>${pend}</div>`
+  if(l.status_pedido==='PEDIR_HOJE')
+    return `<div title="${tt}"><div style="font-size:12px;font-weight:800;color:#991B1B">🔴 PEDIR HOJE</div>
+      <div style="font-size:11px">limite ${dataBR(l.data_limite_pedido)}</div>${pend}</div>`
+  return `<div title="${tt}"><div style="font-size:12px;font-weight:700">Pedir até ${dataBR(l.data_limite_pedido)}</div>
+    <div style="font-size:10px;color:var(--sub)">${l.dias_ate_limite_pedido} dia(s) restante(s) · LT ${l.lead_time_dias_corridos}d</div>${pend}</div>`
+}
+
+function prioridadeChip(p,margem){
+  const map={URGENTE:['#FEE2E2','#991B1B','🔴 URGENTE'],ATENCAO:['#FEF3C7','#92400E','🟡 ATENÇÃO'],
+    NORMAL:['#DCFCE7','#166534','🟢 NORMAL'],SEM_ESTOQUE:['#F1F5F9','#64748B','—']}
+  const[bg,fg,txt]=map[p]||['#F1F5F9','#64748B',p||'—']
+  const t=margem!=null?`Margem sobre o lead time: ${margem} dias (cobertura estimada − LT)`:''
+  return `<span title="${t}" style="background:${bg};color:${fg};border-radius:99px;padding:2px 8px;font-size:10px;font-weight:700;white-space:nowrap">${txt}</span>`
+}
+
+function statusChip(st){
+  const map={OK:['#DCFCE7','#166534','🟢 OK'],
+    ALERTA:['#FEF3C7','#92400E','🟡 ALERTA'],
+    CRITICO:['#FEE2E2','#991B1B','🔴 CRÍTICO'],
+    SEM_ESTOQUE:['#F1F5F9','#64748B','sem estoque']}
+  const [bg,fg,txt]=map[st]||['#F1F5F9','#64748B',st||'—']
+  return `<span style="background:${bg};color:${fg};border-radius:99px;padding:2px 8px;font-size:10px;font-weight:700;white-space:nowrap">${txt}</span>`
+}
+
+async function loadCompra(){
+  if(document.getElementById('sc-visao')?.value==='horizonte') return loadHorizonte()
+  const ano=document.getElementById('sc-ano')?.value||'2026'
+  const mes=document.getElementById('sc-mes')?.value||''
+  const out=document.getElementById('sc-out')
+  out.innerHTML='<div class="empty">Carregando...</div>'
+  try{
+    compraData=await(await fetch(`/api/sugestao-compra?ano=${ano}&mes=${mes}`)).json()
+    renderCompra()
+  }catch(e){out.innerHTML='<div class="empty">Erro: '+e+'</div>'}
+}
+
+// Filtros são só de visualização — nenhum valor é recalculado no cliente.
+// Grupo de insumo. Preenchimento = FillPack (e correlatos de enchimento).
+const TIPO_INSUMO={'Caixa PP':'CAIXA','Caixa P':'CAIXA','Caixa M':'CAIXA','Caixa G':'CAIXA','Caixa GG':'CAIXA',
+  'Fita Gomada':'FITA','FillPack':'PREENCHIMENTO','Papel Colmeia':'PREENCHIMENTO','Plástico Bolha':'PREENCHIMENTO'}
+
+function linhasCompraFiltradas(){
+  if(!compraData||!compraData.linhas) return []
+  const fi=document.getElementById('sc-insumo')?.value||''
+  const fc=document.getElementById('sc-cd')?.value||''
+  const fs=document.getElementById('sc-status')?.value||''
+  const fm=document.getElementById('sc-marca')?.value||''
+  const ft=document.getElementById('sc-tipo')?.value||''
+  // Marca filtra os pools de que a marca participa. Quantidade e custo
+  // continuam sendo do pool inteiro — o estoque é físico e compartilhado.
+  return compraData.linhas.filter(l=>
+    (!fi||l.insumo===fi)&&(!fc||l.cd===fc)&&(!fs||l.status===fs)&&
+    (!fm||(l.marcas||[]).includes(fm))&&
+    (!ft||TIPO_INSUMO[l.insumo]===ft))
+}
+
+// Participação da marca no pool: o consumo do pool É a soma por marca, então
+// a fatia é exata. A compra e o custo rateados são DERIVADOS dessa proporção —
+// servem para atribuição/rateio contábil, não para emitir pedido separado.
+function rateio(l,marca){
+  const det=(l.detalhe_consumo||[]).find(x=>x.marca===marca)
+  if(!det||!l.consumo_mensal) return{consumo:null,pct:null,compra:null,custo:null}
+  const pct=det.consumo_projetado/l.consumo_mensal
+  const compra=l.compra_sugerida!=null?Math.round(l.compra_sugerida*pct):null
+  const custo=(compra!=null&&l.custo_total!=null)?Math.round(l.custo_total*pct*100)/100:null
+  return{consumo:det.consumo_projetado,pct,compra,custo}
+}
+
+function fiscalFiltrado(arr,campoInsumo='insumo'){
+  const fi=document.getElementById('sc-insumo')?.value||''
+  const fc=document.getElementById('sc-cd')?.value||''
+  const fm=document.getElementById('sc-marca')?.value||''
+  const ft=document.getElementById('sc-tipo')?.value||''
+  return arr.filter(x=>(!fi||x[campoInsumo]===fi)&&(!ft||TIPO_INSUMO[x[campoInsumo]]===ft)
+    &&(!fc||(x.cd?x.cd===fc:(x.cds||[]).includes(fc)))
+    &&(!fm||(x.marca?x.marca===fm:(x.composicao||[]).some(c=>c.marca===fm))))
+}
+
+// Visão analítica: Marca + CD + Canal + Insumo, sem consolidação fiscal.
+function renderAnalitico(){
+  const out=document.getElementById('sc-out')
+  const linhas=fiscalFiltrado(compraData.analitico||[]).filter(a=>a.quantidade_sugerida)
+  const f=compraData.faturamento||{}
+  if(!linhas.length){out.innerHTML='<div class="empty">Nenhuma linha analítica para o filtro.</div>';return}
+  out.innerHTML=`<div style="font-size:11px;color:var(--sub);margin-bottom:8px">
+      ${linhas.length} linha(s) · granularidade Marca + CD + Canal + Insumo · sem consolidação fiscal
+    </div>
+    ${f.pendencias&&f.pendencias.length?`<div style="background:#FEF3C7;border:1px solid #FDE68A;border-radius:7px;padding:9px 13px;font-size:11px;color:#92400E;margin-bottom:10px">
+      ⚠️ ${f.pendencias.length} linha(s) com <strong>REGRA_FATURAMENTO_PENDENTE</strong> (${fmtN(f.quantidade_pendente)} un). Não foram atribuídas a nenhuma entidade.</div>`:''}
+    <div class="wrap"><table>
+    <thead><tr><th>Marca</th><th>CD</th><th>Canal</th><th>Insumo</th><th>Un.</th><th>Qtd sugerida</th>
+      <th>Qtd · Cen. 1</th><th>Qtd · Cen. 2</th><th>Participação no pool</th><th>Método</th><th>Fornecedor</th><th>Preço</th><th>Valor</th>
+      <th>Entidade de faturamento</th><th>CNPJ</th></tr></thead><tbody>
+    ${linhas.map(a=>`<tr>
+      <td><strong>${a.marca}</strong></td><td>${a.cd}</td><td>${canalChip(a.canal)}</td>
+      <td>${a.insumo}</td><td style="font-size:11px;color:var(--sub)">${a.unidade}</td>
+      <td><strong>${fmtN(a.quantidade_sugerida)}</strong></td>
+      <td style="background:#F0FDF4">${fmtN(a.quantidade_cenario1)}</td>
+      <td>${fmtN(a.quantidade_cenario2)}</td>
+      <td style="font-size:11px;color:var(--sub)">${(a.participacao_pool*100).toFixed(1)}%</td>
+      <td style="font-size:9px;color:var(--sub)" title="${a.identidade||''}">${a.metodo_alocacao}${a.identidade?' ⚠️':''}</td>
+      <td style="font-size:11px">${a.fornecedor_principal||'—'}</td>
+      <td>${a.preco_unitario!=null?brl(a.preco_unitario):'—'}</td>
+      <td>${a.valor_total!=null?brl(a.valor_total):'—'}</td>
+      <td style="font-size:11px">${a.entidade_faturamento||`<span style="color:#B45309;font-weight:700" title="${(a.faturamento_motivo||'').replace(/"/g,'&quot;')}">REGRA PENDENTE</span>`}</td>
+      <td style="font-size:11px">${a.cnpj_faturamento||'—'}</td>
+    </tr>`).join('')}</tbody></table></div>`
+}
+
+// Visão de pedido: consolidada por entidade + CNPJ + fornecedor + insumo + unidade.
+function renderPedidoFaturamento(){
+  const out=document.getElementById('sc-out')
+  const linhas=fiscalFiltrado(compraData.pedido_faturamento||[])
+  const f=compraData.faturamento||{}
+  if(!linhas.length){out.innerHTML='<div class="empty">Nenhuma linha de pedido para o filtro.</div>';return}
+  const t1=linhas.reduce((s,g)=>s+(g.valor_cenario1||0),0)
+  const t2=linhas.reduce((s,g)=>s+(g.valor_cenario2||0),0)
+  const total=t1
+  out.innerHTML=`<div style="font-size:11px;color:var(--sub);margin-bottom:8px">
+      ${linhas.length} linha(s) de pedido · consolidação apenas com mesma entidade + CNPJ + CD + fornecedor + insumo + unidade · Cenário 1 ${brl(t1)} · Cenário 2 ${brl(t2)}
+    </div>
+    ${f.pendencias&&f.pendencias.length?`<div style="background:#FEF3C7;border:1px solid #FDE68A;border-radius:7px;padding:9px 13px;font-size:11px;color:#92400E;margin-bottom:10px">
+      ⚠️ ${f.pendencias.length} linha(s) fora do pedido por <strong>REGRA_FATURAMENTO_PENDENTE</strong>: ${[...new Set(f.pendencias.map(p=>p.marca+'/'+p.cd))].join(', ')}. Cadastre a regra antes de enviar ao fornecedor.</div>`:''}
+    <div class="wrap"><table>
+    <thead><tr><th>Entidade de faturamento</th><th>CNPJ</th><th>CD</th><th>Fornecedor</th>
+      <th>Insumo</th><th>Un.</th><th>Qtd · Cenário 1</th><th>Qtd · Cenário 2</th><th>Preço</th>
+      <th>Valor · Cenário 1</th><th>Valor · Cenário 2</th><th>Composição</th></tr></thead><tbody>
+    ${linhas.map(g=>`<tr>
+      <td><strong>${g.entidade_faturamento}</strong></td>
+      <td style="font-size:11px">${g.cnpj_faturamento}</td>
+      <td>${g.cd}</td>
+      <td style="font-size:11px">${g.fornecedor||'—'}</td>
+      <td>${g.insumo}</td><td style="font-size:11px;color:var(--sub)">${g.unidade}</td>
+      <td style="background:#F0FDF4"><strong>${fmtN(g.quantidade_cenario1)}</strong></td>
+      <td><strong>${fmtN(g.quantidade_cenario2)}</strong></td>
+      <td>${g.preco_unitario!=null?brl(g.preco_unitario):'—'}</td>
+      <td style="background:#F0FDF4"><strong>${brl(g.valor_cenario1)}</strong></td>
+      <td><strong>${brl(g.valor_cenario2)}</strong></td>
+      <td style="font-size:10px;color:var(--sub)">${(g.composicao_cenario1||[]).map(c=>`${c.marca}/${c.cd}: ${fmtN(c.quantidade)}`).join(' · ')}</td>
+    </tr>`).join('')}</tbody></table></div>`
+}
+
+function renderCompra(){
+  if(document.getElementById('sc-visao')?.value==='horizonte') return renderHorizonte()
+  const fis=document.getElementById('sc-fiscal')?.value||''
+  if(fis==='analitico'&&compraData) return renderAnalitico()
+  if(fis==='pedido'&&compraData) return renderPedidoFaturamento()
+  const out=document.getElementById('sc-out')
+  if(!compraData) return
+  const linhas=linhasCompraFiltradas()
+  const fMarca=document.getElementById('sc-marca')?.value||''
+  if(!linhas.length){
+    out.innerHTML='<div class="empty">Nenhuma linha para o período/filtro selecionado. Cadastre o Forecast na aba 🎯 Forecast.</div>';return
+  }
+  const totalCompra=linhas.filter(l=>l.compra_sugerida).length
+  const cen=(compraData.cenarios)||{}
+  const somaCen=k=>{
+    const com=linhas.filter(l=>l[k]&&l[k].custo_total!=null)
+    const sem=linhas.filter(l=>l[k]&&l[k].custo_total==null&&(l[k].compra_sugerida||0)>0).length
+    return{custo:com.reduce((s,l)=>s+l[k].custo_total,0),sem}
+  }
+  const A=somaCen('cenario_meta_global'),B=somaCen('cenario_meta_insumo')
+  const filtrado=linhas.length!==(compraData.linhas||[]).length
+  const dif=A.custo>0?Math.round((B.custo/A.custo-1)*100):0
+  const cardCen=(titulo,sub,val,sem,destaque,extra)=>`
+    <div style="flex:1;min-width:250px;background:${destaque?'#F0FDF4':'var(--card)'};border:1px solid ${destaque?'#BBF7D0':'var(--border)'};border-radius:10px;padding:12px 16px">
+      <div style="font-size:12px;font-weight:700;color:${destaque?'#166534':'var(--text)'}">${titulo}</div>
+      <div style="font-size:11px;color:var(--sub);margin-bottom:6px">${sub}</div>
+      <div style="font-size:21px;font-weight:800;color:${destaque?'#14532D':'var(--text)'}">${brl(val)}</div>
+      ${extra||''}
+      ${sem?`<div style="font-size:11px;color:#B45309;font-weight:700">⚠️ ${sem} item(ns) sem preço — valor parcial</div>`:''}
+    </div>`
+  out.innerHTML=`
+    <div style="font-size:12px;color:var(--sub);margin-bottom:6px">
+      ${filtrado?'💰 Custo da visão filtrada':'💰 Custo Total da Sugestão de Compra'} — dois cenários de política de estoque
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+      ${cardCen('1 · Manter '+(cen.meta_global?cen.meta_global.meta_meses:2)+' meses de estoque','Política vigente — meta única para todos os insumos',A.custo,A.sem,true,'')}
+      ${cardCen('2 · Meta por insumo','Calibrada por lead time, giro, custo e fornecedor',B.custo,B.sem,false,
+        `<div style="font-size:11px;color:${dif<0?'#166534':'var(--sub)'};font-weight:700">${dif<0?'▼':'▲'} ${Math.abs(dif)}% vs. cenário 1 (${brl(B.custo-A.custo)})</div>`)}
+    </div>
+    <div style="font-size:11px;color:var(--sub);margin-bottom:8px">
+      Metas do cenário 2: ${cen.meta_insumo?Object.entries(cen.meta_insumo.metas).map(([i,m])=>`${i} ${m}m`).join(' · '):'—'}
+      · ajustáveis em ⚙️ Parâmetros (meta_&lt;insumo&gt;)
+    </div>
+    ${fMarca?(()=>{
+      const rs=linhas.map(l=>rateio(l,fMarca))
+      const cR=rs.reduce((s,r)=>s+(r.custo||0),0)
+      const cP=linhas.filter(l=>l.custo_total!=null).reduce((s,l)=>s+l.custo_total,0)
+      return `<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:7px;padding:10px 14px;font-size:11px;color:#1E40AF;margin-bottom:10px">
+      Pools em que <strong>${fMarca}</strong> participa. A <strong>compra é do pool inteiro</strong> (${brl(cP)}) — é uma única compra física para as marcas do CD.
+      A parte de ${fMarca} no consumo é <strong>${brl(cR)}</strong>, rateada pela participação no consumo projetado: serve para atribuição de custo, não para emitir pedido separado.
+    </div>`})():''}
+    <div style="font-size:11px;color:var(--sub);margin-bottom:8px">
+      ${linhas.length} pool(s) físico(s) · ${totalCompra} com compra sugerida ·
+      alvo = consumo × 2 · projetado = MAX(0, alvo − estoque) · compra = MAX(0, projetado − trânsito) ·
+      custo = compra × preço do fornecedor principal
+    </div>
+    <div style="font-size:11px;color:#92400E;background:#FFFBEB;border:1px solid #FDE68A;border-radius:6px;padding:7px 11px;margin-bottom:10px">
+      ℹ️ A <strong>sugestão de compra é calculada com o estoque do último snapshot</strong>, não com o estimado hoje.
+      O estoque estimado, a cobertura estimada e a prioridade servem para decidir <strong>o que pedir primeiro</strong>.
+    </div>
+    <div class="wrap"><table>
+    <thead><tr>
+      <th>Marca / Pool</th><th>CD</th><th>Canal</th><th>Insumo</th>
+      <th>Consumo mensal</th><th>Consumo diário</th>
+      <th>Estoque<div style="font-size:9px;font-weight:400;color:var(--sub)">snapshot → estimado hoje</div></th>
+      <th>Risco<div style="font-size:9px;font-weight:400;color:var(--sub)">cobertura · LT · prioridade</div></th>
+      <th>Status</th><th>Meta 2 meses</th><th>Gap para meta</th>
+      <th>Em trânsito<div style="font-size:9px;font-weight:400;color:var(--sub)">por status</div></th>
+      <th>Chegada / projeção</th><th>Sugestão de compra</th><th>Un.</th>
+      <th>Fornecedor Principal</th><th>Preço Unitário</th><th>Custo Total</th>
+      ${fMarca?`<th style="background:#EFF6FF">Consumo ${fMarca}</th><th style="background:#EFF6FF">% do pool</th><th style="background:#EFF6FF">Compra rateada</th><th style="background:#EFF6FF">Custo rateado</th>`:''}
+      <th style="background:#F0FDF4">Compra · cenário 1</th><th style="background:#F0FDF4">Custo · cenário 1</th>
+      <th>Meta</th><th>Compra · cenário 2</th><th>Custo · cenário 2</th>
+    </tr></thead><tbody>
+    ${linhas.map(l=>`<tr>
+      <td><strong>${l.label}</strong><div style="font-size:10px;color:var(--sub)">${l.marcas.join(' + ')}</div></td>
+      <td>${l.cd}</td><td>${canalChip(l.canal)}</td><td>${l.insumo}</td>
+      <td>${fmtN(l.consumo_mensal)}</td>
+      <td>${fmtN(l.consumo_dia)}</td>
+      <td>
+        <div style="font-size:11px;color:var(--sub)" title="Fonte de verdade: valor informado pelo operador. Só eventos posteriores a esta data entram na estimativa.">Snapshot: ${fmtN(l.estoque_atual)}${l.data_snapshot?` · ${dataBR(l.data_snapshot)}`:''}</div>
+        <div style="font-size:14px;font-weight:800;color:var(--brand)">${fmtN(l.estoque_estimado_hoje)}</div>
+        <div style="font-size:9px;color:var(--sub)">estimado hoje${l.dias_desde_snapshot!=null?` · ${l.dias_desde_snapshot}d desde o snapshot`:''}</div>
+        ${l.saidas_apos_snapshot?`<div style="font-size:10px;color:#5B21B6;font-weight:700">− ${fmtN(l.saidas_apos_snapshot)} transferido${l.saidas_sem_data?' ⚠':''}</div>`:''}
+        <div style="margin-top:3px">${confiancaBadge(l)}</div>
+      </td>
+      <td>
+        <div style="font-size:14px;font-weight:800">${l.cobertura_estimada_hoje!=null?Math.round(l.cobertura_estimada_hoje)+'d':'—'}</div>
+        <div style="font-size:10px;color:var(--sub)">LT ${l.lead_time}d · margem ${l.margem_lt!=null?(l.margem_lt>0?'+':'')+l.margem_lt.toFixed(1)+'d':'—'}</div>
+        <div style="margin-top:3px">${prioridadeChip(l.prioridade,l.margem_lt)}</div>
+        ${l.data_ruptura_projetada?`<div style="font-size:10px;color:#B45309;margin-top:2px">ruptura ${dataBR(l.data_ruptura_projetada)}</div>`:''}
+      </td>
+      <td>${pedidoCell(l)}</td>
+      <td title="${(l.base_status||'').replace(/"/g,'&quot;')}">${statusChip(l.status)}</td>
+      <td>${fmtN(l.estoque_alvo)}</td>
+      <td title="Quanto falta para a meta, antes de descontar o trânsito. NÃO é estoque projetado.">${fmtN(l.gap_para_meta??l.estoque_projetado)}</td>
+      <td>
+        <div>${l.estoque_transito?`<strong>${fmtN(l.estoque_transito)}</strong> <span style="font-size:9px;color:#1E40AF;font-weight:700">EM TRÂNSITO</span>`:'0'}</div>
+        ${l.estoque_transito_vencido?`<div style="font-size:10px;color:#991B1B;font-weight:700">${fmtN(l.estoque_transito_vencido)} PREVISÃO VENCIDA</div>`:''}
+        ${l.recebidos_total?`<div style="font-size:10px;color:#166534;font-weight:700">${fmtN(l.recebidos_total)} RECEBIDO</div>`:''}
+      </td>
+      <td>
+        <div style="font-size:11px">${l.data_prevista?dataBR(l.data_prevista):'—'}</div>
+        ${l.estoque_projetado_futuro!=null?`<div style="font-size:12px;font-weight:700">proj: ${fmtN(l.estoque_projetado_futuro)}</div>`:''}
+        ${l.data_ruptura_projetada?`<div style="font-size:10px;color:#B45309;font-weight:700">ruptura ${dataBR(l.data_ruptura_projetada)}</div>`:''}
+      </td>
+      <td><strong style="color:${l.compra_sugerida?'var(--brand)':'var(--sub)'}">${fmtN(l.compra_sugerida)}</strong></td>
+      <td style="font-size:11px;color:var(--sub)">${l.unidade}</td>
+      <td style="font-size:11px">${l.preco_status==='SEM_FORNECEDOR'?'<span style="color:var(--sub)">NÃO DEFINIDO</span>':l.fornecedor_principal}${(l.preco_status==='SEM_PRECO'||l.preco_status==='UNIDADE_INCOMPATIVEL')?`<div style="font-size:10px;color:#B45309;font-weight:700" title="${(l.preco_observacao||'').replace(/"/g,'&quot;')}">⚠️ PREÇO NÃO DEFINIDO</div>`:''}</td>
+      <td>${(l.preco_status==='OK'||l.preco_status==='OK_CONVERTIDO')
+        ?brl(l.preco_unitario)+`<div style="font-size:10px;color:var(--sub)">/${(l.preco_unidade||'').toLowerCase()}</div>`+(l.fator_conversao?`<div style="font-size:9px;color:var(--sub)" title="${(l.preco_observacao||'').replace(/"/g,'&quot;')}">${brl(l.preco_cadastrado)}/kg × ${l.fator_conversao}</div>`:'')
+        :(l.preco_unitario!=null?`<span style="color:var(--sub)">${brl(l.preco_unitario)}/${(l.preco_cadastrado_unidade||'').toLowerCase()}</span>`:'—')}</td>
+      <td>${l.custo_total!=null?`<strong>${brl(l.custo_total)}</strong>`:'<span style="color:var(--sub)">—</span>'}</td>
+      ${fMarca?(()=>{const r=rateio(l,fMarca);return `
+        <td style="background:#EFF6FF">${fmtN(r.consumo)}</td>
+        <td style="background:#EFF6FF">${r.pct!=null?(r.pct*100).toFixed(1)+'%':'—'}</td>
+        <td style="background:#EFF6FF">${r.compra!=null?fmtN(r.compra):'—'}</td>
+        <td style="background:#EFF6FF">${r.custo!=null?brl(r.custo):'—'}</td>`})():''}
+      <td style="background:#F0FDF4">${fmtN(l.cenario_meta_global?.compra_sugerida)}</td>
+      <td style="background:#F0FDF4">${l.cenario_meta_global?.custo_total!=null?brl(l.cenario_meta_global.custo_total):'—'}</td>
+      <td style="font-size:11px;color:var(--sub)">${l.cenario_meta_insumo?.meta_meses}m</td>
+      <td>${fmtN(l.cenario_meta_insumo?.compra_sugerida)}</td>
+      <td>${l.cenario_meta_insumo?.custo_total!=null?brl(l.cenario_meta_insumo.custo_total):'—'}</td>
+    </tr>`).join('')}
+  </tbody></table></div>`
+}
+
+
+// ── Horizonte: projeção do mês inicial até o mês final escolhido ─────────────
+let horizData=null
+
+function trocarVisaoCompra(){
+  const h=document.getElementById('sc-visao').value==='horizonte'
+  document.getElementById('sc-ate').style.display=h?'':'none'
+  if(h) loadHorizonte(); else loadCompra()
+}
+
+async function loadHorizonte(){
+  const ano=document.getElementById('sc-ano').value
+  const de=document.getElementById('sc-mes').value
+  const ate=document.getElementById('sc-ate').value
+  const out=document.getElementById('sc-out')
+  if(Number(ate)<Number(de)){out.innerHTML='<div class="empty">O mês final precisa ser igual ou posterior ao inicial.</div>';return}
+  out.innerHTML='<div class="empty">Projetando...</div>'
+  try{
+    horizData=await(await fetch(`/api/sugestao-compra/horizonte?ano=${ano}&de=${de}&ate=${ate}`)).json()
+    renderHorizonte()
+  }catch(e){out.innerHTML='<div class="empty">Erro: '+e+'</div>'}
+}
+
+function renderHorizonte(){
+  const out=document.getElementById('sc-out')
+  const d=horizData;if(!d) return
+  const MES=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
+  const fi=document.getElementById('sc-insumo')?.value||''
+  const fc=document.getElementById('sc-cd')?.value||''
+  const fm=document.getElementById('sc-marca')?.value||''
+  const ft=document.getElementById('sc-tipo')?.value||''
+  const filtra=l=>(!fi||l.insumo===fi)&&(!fc||l.cd===fc)&&(!fm||(l.marcas||[]).includes(fm))&&(!ft||TIPO_INSUMO[l.insumo]===ft)
+  const linhas=(d.linhas||[]).filter(filtra)
+  const filtrado=linhas.length!==(d.linhas||[]).length
+  const somaF=k=>linhas.reduce((s,l)=>s+(l[k]||0),0)
+  const tg=filtrado?somaF('custo_meta_global'):d.totais.custo_meta_global
+  const ti=filtrado?somaF('custo_meta_insumo'):d.totais.custo_meta_insumo
+  const dif=tg>0?Math.round((ti/tg-1)*100):0
+  out.innerHTML=`
+    ${d.aviso?`<div style="background:#FEF3C7;border:1px solid #FDE68A;border-radius:7px;padding:9px 13px;font-size:11px;color:#92400E;margin-bottom:10px">⚠️ ${d.aviso}</div>`:''}
+    <div style="font-size:12px;color:var(--sub);margin-bottom:6px">
+      💰 Gasto projetado de <strong>${MES[d.de]}</strong> a <strong>${MES[d.ate]}/${d.ano}</strong>
+      · ${d.totais.meses_projetados} mês(es) com Forecast${filtrado?' · visão filtrada':''}
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+      <div style="flex:1;min-width:250px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:12px 16px">
+        <div style="font-size:12px;font-weight:700;color:#166534">1 · Manter 2 meses de estoque</div>
+        <div style="font-size:11px;color:var(--sub);margin-bottom:6px">Política vigente, acumulada no período</div>
+        <div style="font-size:21px;font-weight:800;color:#14532D">${brl(tg)}</div>
+      </div>
+      <div style="flex:1;min-width:250px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 16px">
+        <div style="font-size:12px;font-weight:700">2 · Meta por insumo</div>
+        <div style="font-size:11px;color:var(--sub);margin-bottom:6px">Calibrada por item, acumulada no período</div>
+        <div style="font-size:21px;font-weight:800">${brl(ti)}</div>
+        <div style="font-size:11px;font-weight:700;color:${dif<0?'#166534':'var(--sub)'}">${dif<0?'▼':'▲'} ${Math.abs(dif)}% (${brl(ti-tg)})</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--sub);margin-bottom:8px">${d.metodo}</div>
+
+    <div class="wrap" style="margin-bottom:18px"><table>
+      <thead><tr><th>Mês</th><th>Consumo valorizado</th><th>Compra · cenário 1</th><th>Compra · cenário 2</th><th>Economia</th></tr></thead>
+      <tbody>${d.meses.map(m=>m.sem_forecast
+        ? `<tr><td><strong>${MES[m.mes]}</strong></td><td colspan="4" style="color:#B45309;font-size:11px">sem Forecast cadastrado — fora da projeção</td></tr>`
+        : `<tr><td><strong>${MES[m.mes]}</strong></td>
+            <td style="font-size:11px;color:var(--sub)">${brl(m.consumo_valorizado)}</td>
+            <td><strong>${brl(m.custo_meta_global)}</strong></td>
+            <td>${brl(m.custo_meta_insumo)}</td>
+            <td style="color:#166534;font-size:11px">${brl(m.custo_meta_insumo-m.custo_meta_global)}</td></tr>`).join('')}
+      </tbody></table></div>
+
+    <div class="wrap"><table>
+      <thead><tr><th>Pool</th><th>CD</th><th>Insumo</th><th>Consumo total</th><th>Un.</th>
+        <th>Preço</th><th>Compra cen. 1</th><th>Custo cen. 1</th><th>Compra cen. 2</th><th>Custo cen. 2</th></tr></thead>
+      <tbody>${linhas.map(l=>`<tr>
+        <td><strong>${l.label}</strong><div style="font-size:10px;color:var(--sub)">${l.marcas.join(' + ')}</div></td>
+        <td>${l.cd}</td><td>${l.insumo}</td>
+        <td>${fmtN(Math.round(l.consumo_total))}</td>
+        <td style="font-size:11px;color:var(--sub)">${l.unidade}</td>
+        <td>${l.preco_unitario!=null?brl(l.preco_unitario):'—'}</td>
+        <td>${fmtN(l.compra_meta_global)}</td>
+        <td><strong>${brl(l.custo_meta_global)}</strong></td>
+        <td>${fmtN(l.compra_meta_insumo)}</td>
+        <td>${brl(l.custo_meta_insumo)}</td>
+      </tr>`).join('')}</tbody></table></div>`
+}
+
+// ── Exportação XLSX (exporta exatamente a visão filtrada em tela) ─────────────
+function carregarSheetJS(){
+  if(window.XLSX) return Promise.resolve()
+  return new Promise((res,rej)=>{
+    const s=document.createElement('script')
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'
+    s.onload=res;s.onerror=()=>rej(new Error('Falha ao carregar a biblioteca XLSX'))
+    document.head.appendChild(s)
+  })
+}
+
+
+async function exportarHorizonteXLSX(){
+  const d=horizData;if(!d){alert('Nada para exportar.');return}
+  try{await carregarSheetJS()}catch(e){alert(e.message);return}
+  const MES=['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
+  const fi=document.getElementById('sc-insumo')?.value||''
+  const fc=document.getElementById('sc-cd')?.value||''
+  const fm=document.getElementById('sc-marca')?.value||''
+  const ft=document.getElementById('sc-tipo')?.value||''
+  const linhas=(d.linhas||[]).filter(l=>(!fi||l.insumo===fi)&&(!fc||l.cd===fc)&&(!fm||(l.marcas||[]).includes(fm))&&(!ft||TIPO_INSUMO[l.insumo]===ft))
+  const MOEDA='"R$" #,##0.00'
+  const aoa=[['Pool','CD','Insumo','Unidade','Consumo total do período','Preço Unitário',
+    'Compra · Cenário 1 (2 meses)','Custo · Cenário 1','Compra · Cenário 2 (meta por insumo)','Custo · Cenário 2']]
+  for(const l of linhas) aoa.push([l.label,l.cd,l.insumo,l.unidade,Math.round(l.consumo_total),
+    l.preco_unitario,l.compra_meta_global,l.custo_meta_global,l.compra_meta_insumo,l.custo_meta_insumo])
+  const totalRow=aoa.length+1
+  aoa.push([]);aoa.push(['TOTAL DO PERÍODO'])
+  aoa.push([]);aoa.push(['Resumo por mês']);aoa.push(['Mês','Consumo valorizado','Custo cenário 1','Custo cenário 2'])
+  for(const m of d.meses) aoa.push(m.sem_forecast?[MES[m.mes],'sem Forecast cadastrado',null,null]
+    :[MES[m.mes],m.consumo_valorizado,m.custo_meta_global,m.custo_meta_insumo])
+  const ws=XLSX.utils.aoa_to_sheet(aoa)
+  for(let R=1;R<totalRow-1;R++){
+    for(const C of [4,6,8]){const c=ws[XLSX.utils.encode_cell({r:R,c:C})];if(c&&c.v!=null){c.t='n';c.z='#,##0'}}
+    for(const C of [5,7,9]){const c=ws[XLSX.utils.encode_cell({r:R,c:C})];if(c&&c.v!=null){c.t='n';c.z=MOEDA}}
+  }
+  for(const C of [7,9]){
+    const col=XLSX.utils.encode_col(C)
+    const soma=linhas.reduce((s,l)=>s+((C===7?l.custo_meta_global:l.custo_meta_insumo)||0),0)
+    ws[XLSX.utils.encode_cell({r:totalRow,c:C})]={t:'n',f:`SUM(${col}2:${col}${totalRow-1})`,v:Math.round(soma*100)/100,z:MOEDA}
+  }
+  ws[XLSX.utils.encode_cell({r:totalRow,c:0})]={t:'s',v:'TOTAL DO PERÍODO'}
+  const inicioResumo=totalRow+4
+  for(let R=inicioResumo;R<aoa.length;R++)
+    for(const C of [1,2,3]){const c=ws[XLSX.utils.encode_cell({r:R,c:C})];if(c&&typeof c.v==='number'){c.t='n';c.z=MOEDA}}
+  ws['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:aoa.length-1,c:9}})
+  ws['!autofilter']={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:totalRow-2,c:9}})}
+  ws['!freeze']='A2'
+  ws['!cols']=[{wch:34},{wch:6},{wch:14},{wch:9},{wch:22},{wch:14},{wch:22},{wch:16},{wch:26},{wch:16}]
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Projecao')
+  const hoje=new Date().toISOString().slice(0,10)
+  XLSX.writeFile(wb,`Projecao_Compras_${MES[d.de]}_a_${MES[d.ate]}_${d.ano}_${hoje}.xlsx`,{bookType:'xlsx'})
+}
+
+
+// Abas fiscais do XLSX. A detalhada nunca é substituída pela consolidada.
+function adicionarAbasFiscais(wb,MOEDA){
+  if(!compraData) return
+  const analitico=fiscalFiltrado(compraData.analitico||[]).filter(a=>a.quantidade_sugerida||a.quantidade_cenario1||a.quantidade_cenario2)
+  const pedido=fiscalFiltrado(compraData.pedido_faturamento||[])
+  const f=compraData.faturamento||{}
+  const NUM='#,##0.00',INT='#,##0'
+
+  // ── Aba detalhada: Marca + CD + Canal + Insumo, sem consolidação fiscal ──
+  if(analitico.length){
+    const aoa=[['Marca','CD','Canal','Insumo','Unidade',
+      'Quantidade sugerida','Quantidade — Cenário 1','Quantidade — Cenário 2',
+      'Entidade de faturamento','CNPJ de faturamento','Método de Alocação',
+      'Consumo projetado','Estoque último snapshot','Data snapshot','Estoque estimado hoje','Cobertura estimada (dias)',
+      'Em trânsito confiável','Em trânsito vencido','Estoque mínimo','Estoque alvo','Gap para meta','Cobertura snapshot (dias)','Prioridade',
+      'Fornecedor principal','Preço unitário','Valor total','Valor — Cenário 1','Valor — Cenário 2',
+      'Status faturamento','Identidade',
+      'Dias desde snapshot','Consumo estimado desde snapshot','% estimativa sobre snapshot',
+      'Confiabilidade da posição','Estimativa material (>=20%)','Revisão recomendada']]
+    for(const a of analitico) aoa.push([a.marca,a.cd,a.canal,a.insumo,a.unidade,
+      a.quantidade_sugerida,a.quantidade_cenario1,a.quantidade_cenario2,
+      a.entidade_faturamento??'REGRA_FATURAMENTO_PENDENTE',a.cnpj_faturamento??'',a.metodo_alocacao,
+      a.consumo_projetado,a.estoque_atual,a.data_snapshot??'',a.estoque_estimado_hoje,a.cobertura_estimada_hoje,
+      a.estoque_transito,a.transito_vencido??0,a.estoque_minimo,a.estoque_alvo,a.gap_para_meta,a.cobertura_dias,a.prioridade??'',
+      a.fornecedor_principal??'',a.preco_unitario,a.valor_total,a.valor_cenario1,a.valor_cenario2,
+      a.faturamento_status,a.identidade??'',
+      a.dias_desde_snapshot??'',a.consumo_estimado_desde_snapshot??'',a.pct_consumo_estimado_sobre_snapshot??'',
+      a.confiabilidade_posicao??'',a.estimativa_material?'SIM':'NÃO',a.revisao_recomendada?'SIM':'NÃO'])
+    const ws=XLSX.utils.aoa_to_sheet(aoa)
+    for(let R=1;R<aoa.length;R++){
+      for(const C of [5,6,7]){const c=ws[XLSX.utils.encode_cell({r:R,c:C})];if(c&&c.v!=null){c.t='n';c.z=INT}}
+      for(const C of [11,12,14,15,16,17,18,19,20,21]){const c=ws[XLSX.utils.encode_cell({r:R,c:C})];if(c&&c.v!=null&&typeof c.v==='number'){c.t='n';c.z=NUM}}
+      for(const C of [24,25,26,27]){const c=ws[XLSX.utils.encode_cell({r:R,c:C})];if(c&&c.v!=null&&typeof c.v==='number'){c.t='n';c.z=MOEDA}}
+      for(const C of [30,31,32]){const c=ws[XLSX.utils.encode_cell({r:R,c:C})];if(c&&c.v!=null&&typeof c.v==='number'){c.t='n';c.z=NUM}}
+    }
+    ws['!autofilter']={ref:ws['!ref']};ws['!freeze']='A2'
+    ws['!cols']=[{wch:10},{wch:6},{wch:9},{wch:13},{wch:8},{wch:16},{wch:20},{wch:20},
+      {wch:24},{wch:20},{wch:26},{wch:16},{wch:13},{wch:12},{wch:14},{wch:13},{wch:14},
+      {wch:20},{wch:12},{wch:18},{wch:18},{wch:16},{wch:16},{wch:14},{wch:13},{wch:14},{wch:18},{wch:12},
+      {wch:24},{wch:14},{wch:14},{wch:16},{wch:16},{wch:26},{wch:40},
+      {wch:14},{wch:20},{wch:16},{wch:18},{wch:18},{wch:16}]
+    XLSX.utils.book_append_sheet(wb,ws,'Sugestao de Compra — Detalhada')
+  }
+
+  // ── Aba de pedido: visão de lançamento, consolidada por CNPJ + CD +
+  //    fornecedor + insumo. Sem colunas analíticas — o detalhe por marca
+  //    vive na aba Detalhada. Uma linha por chave, nunca uma por marca.
+  if(pedido.length){
+    const ORDEM_INSUMO=['Caixa PP','Caixa P','Caixa M','Caixa G','Caixa GG','Fita Gomada','FillPack']
+    const ordInsumo=n=>{const i=ORDEM_INSUMO.indexOf(n);return i<0?99:i}
+    const ord=[...pedido].sort((a,b)=>
+      a.cd.localeCompare(b.cd)
+      ||String(a.entidade_faturamento).localeCompare(String(b.entidade_faturamento))
+      ||String(a.fornecedor||'').localeCompare(String(b.fornecedor||''))
+      ||(ordInsumo(a.insumo)-ordInsumo(b.insumo))
+      ||String(a.insumo).localeCompare(String(b.insumo)))
+    const aoa=[['CNPJ de Faturamento','Filial / Entidade de Faturamento','CD','Fornecedor',
+      'Insumo','Unidade','Quantidade — Cenário 1','Quantidade — Cenário 2','Preço Unitário',
+      'Valor Total — Cenário 1','Valor Total — Cenário 2','Ref. auditoria']]
+    for(const g of ord) aoa.push([g.cnpj_faturamento,g.entidade_faturamento,g.cd,g.fornecedor??'',
+      g.insumo,g.unidade,g.quantidade_cenario1,g.quantidade_cenario2,g.preco_unitario,
+      g.valor_cenario1,g.valor_cenario2,
+      // Referência curta para cruzar com a aba Detalhada, sem poluir a aba.
+      `${g.entidade_codigo}|${g.cd}|${g.insumo}`])
+    const totalRow=aoa.length+1
+    aoa.push([]);aoa.push(['TOTAL DO PEDIDO'])
+    if(f.pendencias&&f.pendencias.length){
+      aoa.push([]);aoa.push([`ATENCAO: ${f.pendencias.length} linha(s) fora deste pedido por REGRA_FATURAMENTO_PENDENTE`])
+      aoa.push(['Marca','CD','Insumo','Qtd Cenario 1','Qtd Cenario 2','Motivo'])
+      for(const p of f.pendencias) aoa.push([p.marca,p.cd,p.insumo,p.quantidade_cenario1,p.quantidade_cenario2,p.motivo])
+    }
+    const r=f.reconciliacao||{}
+    if(r.cenario1){
+      aoa.push([]);aoa.push(['Reconciliacao','Motor','Detalhado','Faturamento','Pendencias','Confere'])
+      aoa.push(['Cenario 1',r.cenario1.motor,r.cenario1.detalhado,r.cenario1.faturamento,r.cenario1.pendencias,r.cenario1.confere?'OK':'DIVERGE'])
+      aoa.push(['Cenario 2',r.cenario2.motor,r.cenario2.detalhado,r.cenario2.faturamento,r.cenario2.pendencias,r.cenario2.confere?'OK':'DIVERGE'])
+    }
+    const ws=XLSX.utils.aoa_to_sheet(aoa)
+    for(let R=1;R<totalRow-1;R++){
+      for(const C of [6,7]){const c=ws[XLSX.utils.encode_cell({r:R,c:C})];if(c&&c.v!=null){c.t='n';c.z=INT}}
+      for(const C of [8,9,10]){const c=ws[XLSX.utils.encode_cell({r:R,c:C})];if(c&&c.v!=null){c.t='n';c.z=MOEDA}}
+    }
+    for(const C of [6,7]){
+      const col=XLSX.utils.encode_col(C)
+      const soma=ord.reduce((s2,g)=>s2+((C===6?g.quantidade_cenario1:g.quantidade_cenario2)||0),0)
+      ws[XLSX.utils.encode_cell({r:totalRow,c:C})]={t:'n',f:`SUM(${col}2:${col}${totalRow-1})`,v:soma,z:INT}
+    }
+    for(const C of [9,10]){
+      const col=XLSX.utils.encode_col(C)
+      const soma=ord.reduce((s2,g)=>s2+((C===9?g.valor_cenario1:g.valor_cenario2)||0),0)
+      ws[XLSX.utils.encode_cell({r:totalRow,c:C})]={t:'n',f:`SUM(${col}2:${col}${totalRow-1})`,v:Math.round(soma*100)/100,z:MOEDA}
+    }
+    ws[XLSX.utils.encode_cell({r:totalRow,c:0})]={t:'s',v:'TOTAL DO PEDIDO'}
+    ws['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:aoa.length-1,c:11}})
+    ws['!autofilter']={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:totalRow-2,c:11}})}
+    ws['!freeze']='A2'
+    ws['!cols']=[{wch:20},{wch:26},{wch:6},{wch:24},{wch:13},{wch:8},
+      {wch:20},{wch:20},{wch:14},{wch:20},{wch:20},{wch:30}]
+    XLSX.utils.book_append_sheet(wb,ws,'Pedido por Faturamento')
+  }
+}
+
+async function exportarCompraXLSX(){
+  if(document.getElementById('sc-visao')?.value==='horizonte') return exportarHorizonteXLSX()
+  // Trava: composição tem de fechar com a quantidade em toda linha fiscal.
+  const fchk=compraData?.faturamento
+  if(fchk&&fchk.exportacao_liberada===false){
+    const v=(fchk.composicao_violacoes||[]).slice(0,3)
+      .map(x=>`${x.entidade} · ${x.cd} · ${x.insumo} · ${x.cenario}: qtd ${x.quantidade} vs composição ${x.soma_composicao}`).join('\n')
+    alert('Exportação bloqueada — o XLSX não reconcilia:\n\n'+
+      (v||`${fchk.pools_com_diferenca} pool(s) com diferença entre a necessidade e a soma por marca.`)+
+      '\n\nNão utilize este arquivo para pedido.')
+    return
+  }
+  const linhas=linhasCompraFiltradas()
+  if(!linhas.length){alert('Nada para exportar.');return}
+  try{await carregarSheetJS()}catch(e){alert(e.message);return}
+  const fMarca=document.getElementById('sc-marca')?.value||''
+  const HDR=['Marca / Pool','CD','Canal','Insumo','Consumo Mensal Projetado','Consumo Diário',
+    // v76: esta coluna alimenta a MESMA linha que "Cobertura em Dias" e
+    // "Sugestão de Compra", ambas já calculadas sobre a posição operacional
+    // de hoje (snapshot + recebimentos confirmados posteriores - consumo -
+    // saídas). Antes desta versão, esta coluna mostrava o snapshot bruto
+    // (l.estoque_atual) — divergente das colunas vizinhas na mesma linha.
+    // Corrigido para usar a mesma base (l.estoque_estimado_hoje). O snapshot
+    // bruto continua auditável na aba "Sugestao de Compra — Detalhada"
+    // ('Estoque último snapshot' + 'Data snapshot').
+    'Estoque Atual (posição operacional de hoje)','Cobertura em Dias','Lead Time','Status','Meta 2 Meses','Estoque Projetado',
+    'Estoque em Trânsito','Data Prevista de Chegada','Sugestão de Compra','Unidade',
+    'Fornecedor Principal','Preço Unitário','Custo Total',
+    'Compra · Cenário 1 (meta global)','Custo · Cenário 1',
+    'Meta Cenário 2 (meses)','Compra · Cenário 2 (meta por insumo)','Custo · Cenário 2']
+  if(fMarca) HDR.push(`Consumo ${fMarca}`,`% do pool (${fMarca})`,`Compra rateada ${fMarca}`,`Custo rateado ${fMarca}`)
+  const STATUS_TXT={OK:'OK',ALERTA:'ALERTA',CRITICO:'CRITICO',SEM_ESTOQUE:'SEM ESTOQUE'}
+  const aoa=[HDR]
+  for(const l of linhas){
+    aoa.push([l.label,l.cd,l.canal,l.insumo,
+      l.consumo_mensal,l.consumo_dia,l.estoque_estimado_hoje,l.cobertura_dias,l.lead_time,
+      STATUS_TXT[l.status]||l.status,l.estoque_alvo,l.estoque_projetado,l.estoque_transito,
+      l.data_prevista?new Date(l.data_prevista+'T00:00:00'):null,
+      l.compra_sugerida,l.unidade,
+      l.preco_status==='SEM_FORNECEDOR'?'NÃO DEFINIDO':l.fornecedor_principal,
+      (l.preco_status==='OK'||l.preco_status==='OK_CONVERTIDO')?l.preco_unitario:null,
+      l.custo_total,
+      l.cenario_meta_global?.compra_sugerida??null,l.cenario_meta_global?.custo_total??null,
+      l.cenario_meta_insumo?.meta_meses??null,
+      l.cenario_meta_insumo?.compra_sugerida??null,l.cenario_meta_insumo?.custo_total??null]
+      .concat(fMarca?(()=>{const r=rateio(l,fMarca);return [r.consumo,r.pct,r.compra,r.custo]})():[]))
+  }
+  // Linha de total, com fórmula SUM sobre a coluna de custo.
+  const totalRow=aoa.length+1
+  const custoVis=linhas.filter(l=>l.custo_total!=null).reduce((s,l)=>s+l.custo_total,0)
+  const semPreco=linhas.filter(l=>l.custo_total==null&&(l.compra_sugerida||0)>0).length
+  aoa.push([])
+  aoa.push(['CUSTO TOTAL DO PEDIDO'])
+  if(semPreco) aoa.push([`⚠️ ${semPreco} item(ns) sem preço cadastrado — total parcial`])
+  const ws=XLSX.utils.aoa_to_sheet(aoa,{cellDates:true})
+  const range=XLSX.utils.decode_range(ws['!ref'])
+  const MOEDA='"R$" #,##0.00'
+  for(let R=1;R<totalRow-1;R++){
+    const dcell=ws[XLSX.utils.encode_cell({r:R,c:13})]
+    if(dcell&&dcell.v instanceof Date){dcell.t='d';dcell.z='dd/mm/yyyy'}
+    for(const C of [4,5,6,7,8,10,11,12,14]){
+      const cell=ws[XLSX.utils.encode_cell({r:R,c:C})]
+      if(cell&&cell.v!=null&&cell.v!==''){cell.t='n';cell.z='#,##0.00'}
+    }
+    for(const C of [19,21,23]){
+      const cell=ws[XLSX.utils.encode_cell({r:R,c:C})]
+      if(cell&&cell.v!=null&&cell.v!==''){cell.t='n';cell.z='#,##0'}
+    }
+    for(const C of [17,18,20,22]){
+      const cell=ws[XLSX.utils.encode_cell({r:R,c:C})]
+      if(cell&&cell.v!=null&&cell.v!==''){cell.t='n';cell.z=MOEDA}
+    }
+  }
+  // Total como fórmula e como valor (numérico, formato monetário)
+  ws[XLSX.utils.encode_cell({r:totalRow,c:0})]={t:'s',v:'CUSTO TOTAL DO PEDIDO'}
+  for(const C of [18,20,22]){
+    const col=XLSX.utils.encode_col(C)
+    const soma=linhas.reduce((s,l)=>s+((C===18?l.custo_total:C===20?l.cenario_meta_global?.custo_total:l.cenario_meta_insumo?.custo_total)||0),0)
+    ws[XLSX.utils.encode_cell({r:totalRow,c:C})]={t:'n',f:`SUM(${col}2:${col}${totalRow-1})`,v:Math.round(soma*100)/100,z:MOEDA}
+  }
+  const ultCol=HDR.length-1
+  if(fMarca){
+    for(let R=1;R<totalRow-1;R++){
+      for(const C of [24,26]){const c2=ws[XLSX.utils.encode_cell({r:R,c:C})];if(c2&&c2.v!=null){c2.t='n';c2.z='#,##0'}}
+      const p=ws[XLSX.utils.encode_cell({r:R,c:25})];if(p&&p.v!=null){p.t='n';p.z='0.0%'}
+      const cu=ws[XLSX.utils.encode_cell({r:R,c:27})];if(cu&&cu.v!=null){cu.t='n';cu.z=MOEDA}
+    }
+    const col=XLSX.utils.encode_col(27)
+    const soma=linhas.reduce((s,l)=>s+(rateio(l,fMarca).custo||0),0)
+    ws[XLSX.utils.encode_cell({r:totalRow,c:27})]={t:'n',f:`SUM(${col}2:${col}${totalRow-1})`,v:Math.round(soma*100)/100,z:MOEDA}
+  }
+  ws['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:aoa.length-1,c:ultCol}})
+  ws['!autofilter']={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:totalRow-2,c:ultCol}})}
+  ws['!freeze']='A2'
+  ws['!rows']=[{hpt:22}]
+  ws['!cols']=[{wch:34},{wch:6},{wch:9},{wch:14},{wch:14},{wch:13},{wch:13},{wch:12},
+               {wch:8},{wch:11},{wch:14},{wch:16},{wch:14},{wch:18},{wch:17},{wch:9},
+               {wch:26},{wch:14},{wch:16},
+               {wch:20},{wch:16},{wch:14},{wch:22},{wch:16},
+               {wch:16},{wch:14},{wch:18},{wch:16}]
+  const wb=XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb,ws,'Sugestao de Compra')
+  adicionarAbasFiscais(wb,MOEDA)
+  const ano=document.getElementById('sc-ano').value
+  const mes=Number(document.getElementById('sc-mes').value)
+  const MES_NOME=['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
+  const hoje=new Date().toISOString().slice(0,10)
+  XLSX.writeFile(wb,`Sugestao_de_Compra_${MES_NOME[mes]}_${ano}_${hoje}.xlsx`,{bookType:'xlsx',cellDates:true})
+}
+
+
+
+loadAll()
+setInterval(loadAll,60000)
+</script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Automações n8n — Conciliação de Estoque e Notas Fiscais</title>
+<title>Hub de Gestão de Insumos e Equipamentos</title>
 <style>
   :root {
     --bg: #0d1117;
@@ -26,7 +26,7 @@
     margin: 0 auto;
     padding: 48px 24px 80px;
   }
-  h1 { font-size: 26px; margin-bottom: 8px; }
+  h1 { font-size: 28px; margin-bottom: 8px; }
   .subtitle { color: var(--muted); font-size: 16px; margin-bottom: 32px; }
   .badge {
     display: inline-block;
@@ -46,13 +46,12 @@
     padding-bottom: 8px;
     margin-bottom: 16px;
   }
-  h3 { font-size: 15px; color: var(--accent); margin-bottom: 8px; }
   .card {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 20px;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
   }
   .stack { display: flex; flex-wrap: wrap; gap: 8px; }
   .stack span {
@@ -72,67 +71,75 @@
     font-weight: 600;
     margin-top: 8px;
   }
-  ol, ul { padding-left: 20px; }
+  ul { padding-left: 20px; }
   li { margin-bottom: 8px; }
-  .flow {
-    font-size: 13px;
-    color: var(--muted);
-    margin-top: 6px;
-  }
+  .crit { color: #ff7b72; font-weight: 600; }
+  .flex { color: #58a6ff; font-weight: 600; }
 </style>
 </head>
 <body>
 <div class="container">
 
-  <div class="badge">Projeto concluído</div>
-  <h1>🔄 Automações n8n — Conciliação de Estoque e Notas Fiscais</h1>
-  <p class="subtitle">Dois workflows de automação de operação de estoque para e-commerce/varejo multi-filial, eliminando conferência manual entre ERP, WMS e notas fiscais.</p>
+  <div class="badge">Em desenvolvimento</div>
+  <h1>📦 Hub de Gestão de Insumos e Equipamentos</h1>
+  <p class="subtitle">Ferramenta interna para gestão de estoque de insumos de embalagem em operação multi-marca e multi-canal (B2C, B2B, Marketplace), com forecast dinâmico de consumo e alertas automáticos de reposição.</p>
 
   <section>
-    <h2>1. Estoque Unificado — ERP + WMS + Alertas Críticos</h2>
+    <h2>Contexto do problema</h2>
     <div class="card">
-      <p>Consolida diariamente o saldo de estoque de duas fontes distintas e emite alerta automático quando a divergência ultrapassa o limiar de criticidade por curva ABC.</p>
-      <h3>Fluxo</h3>
-      <ol>
-        <li><strong>23h35</strong> — extrai saldo ERP (Protheus) via Metabase, soma quantidade disponível + reservada + empenhada</li>
-        <li><strong>09h00 (dia seguinte)</strong> — extrai saldo WMS via XLSX no Google Drive, cruza com o ERP da véspera</li>
-        <li>Classifica cada SKU por curva ABC e calcula divergência absoluta</li>
-        <li>Aciona alerta no Google Chat quando: <strong>AA/A</strong> &lt; 1.000un · <strong>B</strong> &lt; 300un · <strong>C</strong> &lt; 200un</li>
-        <li>Cruza SKUs críticos com notas pendentes via GTIN antes de notificar — evita falso-positivo por nota ainda não lançada</li>
-      </ol>
+      <p>Nasceu de uma crise operacional real: rupturas de insumos críticos travando o packing de pedidos, sem visibilidade centralizada de estoque entre marcas e centros de distribuição. Antes deste projeto, o controle era manual e fragmentado por planilhas isoladas por marca.</p>
     </div>
   </section>
 
   <section>
-    <h2>2. Não Classificadas — Zerando o backlog de notas fiscais</h2>
+    <h2>O que o sistema resolve</h2>
     <div class="card">
-      <p>Zera o backlog de notas fiscais que ficam pendentes de classificação no ERP/WMS.</p>
-      <h3>Fluxo</h3>
-      <ol>
-        <li>Extrai notas não classificadas do Metabase (Protheus)</li>
-        <li>Busca XLSXs de notas emitidas e recebidas no Google Drive</li>
-        <li>Padroniza ambas as bases (nomenclatura de colunas divergente entre fontes)</li>
-        <li>Executa Apps Script que cruza as bases e classifica automaticamente</li>
-        <li>Grava resultado em abas estruturadas</li>
-        <li>Envia resumo diário no Google Chat</li>
-      </ol>
-      <p class="flow">Gatilho: 09:00 e 18:30 diariamente</p>
+      <ul>
+        <li><strong>Estoque mínimo dinâmico</strong> por insumo, calculado a partir de consumo médio × lead time (lead times diferentes por insumo — ex: fita gomada 16 dias, caixas 7-12 dias)</li>
+        <li><strong>Forecast de consumo</strong> baseado em mix de produtos e fatores de consumo por marca/canal, traduzindo o forecast de vendas em necessidade real de insumo</li>
+        <li><strong>Classificação de insumos por criticidade:</strong> <span class="crit">críticos</span> (ex: caixas — alta criticidade, maior lead time) e <span class="flex">compartilháveis/flexíveis</span> (ex: fita gomada, preenchimento — podem ser redistribuídos entre marcas antes de gerar nova compra)</li>
+        <li><strong>Necessidade de compra</strong> calculada automaticamente por marca/CD/canal</li>
+        <li><strong>Alertas automáticos</strong> (e-mail + Google Chat) quando o estoque cruza o ponto crítico, ou quando uma marca não reporta seu preenchimento semanal</li>
+        <li><strong>Regras de faturamento</strong> configuráveis por marca+CD (rateio de CNPJ emissor)</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Arquitetura</h2>
+    <div class="card">
+      <p><strong>API</strong> completa em Cloudflare Workers (Hono), com banco SQLite embutido (D1).</p>
+      <p><strong>Front-end</strong> single-page com abas de Snapshot, Parâmetros (mix/fatores de consumo), Forecast, Alertas e Faturamento.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Integrações</h2>
+    <div class="card">
+      <ul>
+        <li>Ingestão de dados via formulário (Google Forms → planilha → CSV)</li>
+        <li>Notificação de criticidade e ausência de preenchimento via Google Chat Webhook</li>
+        <li>Alertas por e-mail via Resend API</li>
+        <li>Endpoints de webhook para automação externa, autenticados por chave secreta</li>
+      </ul>
     </div>
   </section>
 
   <section>
     <h2>Stack</h2>
     <div class="stack">
-      <span>n8n</span>
-      <span>Google Apps Script</span>
-      <span>Metabase API</span>
-      <span>Google Sheets/Drive</span>
-      <span>Google Chat Webhooks</span>
+      <span>TypeScript</span>
+      <span>Hono</span>
+      <span>Cloudflare Workers</span>
+      <span>SQLite (D1)</span>
+      <span>Resend API</span>
+      <span>Google Chat API</span>
+      <span>Google Sheets/Forms</span>
     </div>
   </section>
 
   <section>
-    <a class="cta" href="https://github.com/SamuelReboucas/n8n-workflows-estoque">Ver workflows no GitHub →</a>
+    <a class="cta" href="https://github.com/SamuelReboucas/hub-insumos">Ver código-fonte no GitHub →</a>
   </section>
 
 </div>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automações n8n — Conciliação de Estoque e Notas Fiscais</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+  h1 { font-size: 26px; margin-bottom: 8px; }
+  .subtitle { color: var(--muted); font-size: 16px; margin-bottom: 32px; }
+  .badge {
+    display: inline-block;
+    background: rgba(88,166,255,0.15);
+    color: var(--accent);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-right: 8px;
+    margin-bottom: 24px;
+  }
+  section { margin-bottom: 32px; }
+  h2 {
+    font-size: 18px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+  }
+  h3 { font-size: 15px; color: var(--accent); margin-bottom: 8px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .stack { display: flex; flex-wrap: wrap; gap: 8px; }
+  .stack span {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+  }
+  .cta {
+    display: inline-block;
+    background: var(--accent);
+    color: #0d1117;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    margin-top: 8px;
+  }
+  ol, ul { padding-left: 20px; }
+  li { margin-bottom: 8px; }
+  .flow {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="badge">Projeto concluído</div>
+  <h1>🔄 Automações n8n — Conciliação de Estoque e Notas Fiscais</h1>
+  <p class="subtitle">Dois workflows de automação de operação de estoque para e-commerce/varejo multi-filial, eliminando conferência manual entre ERP, WMS e notas fiscais.</p>
+
+  <section>
+    <h2>1. Estoque Unificado — ERP + WMS + Alertas Críticos</h2>
+    <div class="card">
+      <p>Consolida diariamente o saldo de estoque de duas fontes distintas e emite alerta automático quando a divergência ultrapassa o limiar de criticidade por curva ABC.</p>
+      <h3>Fluxo</h3>
+      <ol>
+        <li><strong>23h35</strong> — extrai saldo ERP (Protheus) via Metabase, soma quantidade disponível + reservada + empenhada</li>
+        <li><strong>09h00 (dia seguinte)</strong> — extrai saldo WMS via XLSX no Google Drive, cruza com o ERP da véspera</li>
+        <li>Classifica cada SKU por curva ABC e calcula divergência absoluta</li>
+        <li>Aciona alerta no Google Chat quando: <strong>AA/A</strong> &lt; 1.000un · <strong>B</strong> &lt; 300un · <strong>C</strong> &lt; 200un</li>
+        <li>Cruza SKUs críticos com notas pendentes via GTIN antes de notificar — evita falso-positivo por nota ainda não lançada</li>
+      </ol>
+    </div>
+  </section>
+
+  <section>
+    <h2>2. Não Classificadas — Zerando o backlog de notas fiscais</h2>
+    <div class="card">
+      <p>Zera o backlog de notas fiscais que ficam pendentes de classificação no ERP/WMS.</p>
+      <h3>Fluxo</h3>
+      <ol>
+        <li>Extrai notas não classificadas do Metabase (Protheus)</li>
+        <li>Busca XLSXs de notas emitidas e recebidas no Google Drive</li>
+        <li>Padroniza ambas as bases (nomenclatura de colunas divergente entre fontes)</li>
+        <li>Executa Apps Script que cruza as bases e classifica automaticamente</li>
+        <li>Grava resultado em abas estruturadas</li>
+        <li>Envia resumo diário no Google Chat</li>
+      </ol>
+      <p class="flow">Gatilho: 09:00 e 18:30 diariamente</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Stack</h2>
+    <div class="stack">
+      <span>n8n</span>
+      <span>Google Apps Script</span>
+      <span>Metabase API</span>
+      <span>Google Sheets/Drive</span>
+      <span>Google Chat Webhooks</span>
+    </div>
+  </section>
+
+  <section>
+    <a class="cta" href="https://github.com/SamuelReboucas/n8n-workflows-estoque">Ver workflows no GitHub →</a>
+  </section>
+
+</div>
+</body>
+</html>
